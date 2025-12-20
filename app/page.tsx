@@ -413,9 +413,9 @@ function CareerExplorer({ formData }: { formData: any }) {
           </div>
         </header>
 
-        <div className="flex-1 flex items-start justify-center p-12 overflow-y-auto">
+        <div className="flex-1 flex items-center justify-center p-8">
           <div className="w-full max-w-7xl">
-            <div className="grid grid-cols-[1fr_1.5fr] gap-12 items-start relative">
+            <div className="grid grid-cols-[0.9fr_2fr] gap-8 items-center relative">
               {/* Visual flow indicator - arrow pointing from main to secondary nodes */}
               {currentNode && secondaryNodes.length > 0 && (
                 <div className="absolute left-[calc(50%-6rem)] top-1/2 -translate-y-1/2 z-0 hidden lg:block">
@@ -424,7 +424,7 @@ function CareerExplorer({ formData }: { formData: any }) {
               )}
               
               <div
-                className={`transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"} max-h-[calc(100vh-12rem)]`}
+                className={`transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
               >
                 <div 
                   onClick={() => {
@@ -433,31 +433,31 @@ function CareerExplorer({ formData }: { formData: any }) {
                       setDetailsOpen(true)
                     }
                   }}
-                  className={`bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/50 flex flex-col justify-between transition-all ${
+                  className={`bg-white/80 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-white/50 flex flex-col justify-between transition-all ${
                     currentNode ? "cursor-pointer hover:shadow-xl hover:scale-[1.02] hover:border-[#FF6B9D]/30" : ""
                   }`}
                 >
                   <div>
-                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                       {currentNode ? "Current Path" : "Your Profile"}
                     </h3>
-                    <h2 className="text-2xl font-bold text-foreground mb-6">
+                    <h2 className="text-xl font-bold text-foreground mb-4">
                       {currentNode ? currentNode.title : "Let's explore!"}
                     </h2>
 
                     {currentNode ? (
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
                             {"Industry"}
                           </p>
-                          <p className="text-lg text-foreground">{currentNode.industry}</p>
+                          <p className="text-sm text-foreground">{currentNode.industry}</p>
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-                            {"About this role"}
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                            {"About"}
                           </p>
-                          <p className="text-sm text-foreground leading-relaxed">{currentNode.description}</p>
+                          <p className="text-xs text-foreground leading-relaxed line-clamp-2">{currentNode.description}</p>
                         </div>
                         <button
                           onClick={(e) => {
@@ -465,59 +465,48 @@ function CareerExplorer({ formData }: { formData: any }) {
                             setSelectedNode(currentNode)
                             setDetailsOpen(true)
                           }}
-                          className="mt-6 w-full bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl py-3 px-6 font-semibold transition-all text-base shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                          className="mt-4 w-full bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-lg py-2 px-4 font-semibold transition-all text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                         >
-                          <Sparkles className="w-4 h-4" />
-                          {"View Full Career Details"}
+                          <Sparkles className="w-3 h-3" />
+                          {"View Details"}
                         </button>
-                        <p className="mt-2 text-xs text-muted-foreground text-center">
-                          {"Or click anywhere on this card"}
-                        </p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <div>
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
                             {"Major"}
                           </p>
-                          <p className="text-lg text-foreground">{formData.major || "Not specified"}</p>
+                          <p className="text-sm text-foreground">{formData.major || "Not specified"}</p>
                         </div>
                         <div>
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
                             {"Key Skills"}
                           </p>
-                          <p className="text-sm text-foreground leading-relaxed">
+                          <p className="text-xs text-foreground leading-relaxed line-clamp-2">
                             {formData.skills || "Not specified"}
                           </p>
                         </div>
                       </div>
                     )}
                   </div>
-
-                  <div className="mt-8 pt-6 border-t border-border">
-                    <p className="text-xs text-muted-foreground text-center">
-                      {currentNode
-                        ? "Click this card to view full details, or explore paths →"
-                        : "Explore careers that match your profile"}
-                    </p>
-                  </div>
                 </div>
               </div>
 
               <div
-                className={`space-y-4 transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"} max-h-[calc(100vh-12rem)] overflow-y-auto pr-2`}
+                className={`flex flex-col gap-3 transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"} h-full`}
               >
                 {isLoadingCareers && !currentNodeId ? (
-                  <div className="space-y-4">
+                  <div className="flex flex-col gap-3 h-full">
                     {[1, 2, 3].map((idx) => (
                       <div
                         key={idx}
-                        className="w-full rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 p-8 shadow-lg border border-white/20 animate-pulse"
+                        className="flex-1 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 p-5 shadow-lg border border-white/20 animate-pulse"
                       >
-                        <div className="h-6 bg-white/30 rounded-full w-20 mb-3"></div>
-                        <div className="h-8 bg-white/40 rounded w-3/4 mb-2"></div>
-                        <div className="h-4 bg-white/30 rounded w-full mb-2"></div>
-                        <div className="h-4 bg-white/30 rounded w-5/6"></div>
+                        <div className="h-4 bg-white/30 rounded-full w-16 mb-2"></div>
+                        <div className="h-5 bg-white/40 rounded w-2/3 mb-2"></div>
+                        <div className="h-3 bg-white/30 rounded w-full mb-1"></div>
+                        <div className="h-3 bg-white/30 rounded w-4/5"></div>
                       </div>
                     ))}
                     <div className="text-center py-4">
@@ -559,12 +548,12 @@ function CareerExplorer({ formData }: { formData: any }) {
                     {secondaryNodes.slice(0, 3).map((node, idx) => (
                       <div
                         key={node.id}
-                        className="group w-full transition-all duration-500 hover:scale-[1.02] relative"
+                        className="group w-full transition-all duration-500 hover:scale-[1.01] relative flex-1"
                       >
                         {/* Visual flow indicator - connecting line from main node */}
                         {currentNode && (
-                          <div className="absolute -left-6 top-1/2 -translate-y-1/2 hidden lg:block">
-                            <div className="w-6 h-0.5 bg-gradient-to-r from-[#FF6B9D]/20 to-transparent"></div>
+                          <div className="absolute -left-4 top-1/2 -translate-y-1/2 hidden lg:block">
+                            <div className="w-4 h-0.5 bg-gradient-to-r from-[#FF6B9D]/20 to-transparent"></div>
                           </div>
                         )}
                         <div
@@ -572,33 +561,31 @@ function CareerExplorer({ formData }: { formData: any }) {
                             setSelectedNode(node)
                             setDetailsOpen(true)
                           }}
-                          className={`w-full rounded-2xl bg-gradient-to-br ${node.color} p-8 shadow-xl border border-white/20 transition-all duration-300 hover:shadow-2xl cursor-pointer`}
+                          className={`w-full h-full rounded-xl bg-gradient-to-br ${node.color} p-5 shadow-lg border border-white/20 transition-all duration-300 hover:shadow-xl cursor-pointer flex flex-col justify-between`}
                         >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="inline-block bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-white mb-3">
-                                {node.industry}
-                              </div>
-                              <h4 className="text-2xl font-bold text-white mb-2 text-balance">{node.title}</h4>
-                              <p className="text-white/90 text-sm leading-relaxed mb-4">{node.description}</p>
+                          <div className="flex-1">
+                            <div className="inline-block bg-white/30 backdrop-blur-sm px-2 py-0.5 rounded-full text-xs font-medium text-white mb-2">
+                              {node.industry}
                             </div>
+                            <h4 className="text-lg font-bold text-white mb-1.5 text-balance line-clamp-1">{node.title}</h4>
+                            <p className="text-white/90 text-xs leading-relaxed line-clamp-2 mb-3">{node.description}</p>
                           </div>
 
-                          <div className="mt-6 flex items-center gap-3">
+                          <div className="mt-3">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleExploreNode(node)
                               }}
-                              className="flex-1 bg-white hover:bg-white/90 text-gray-800 rounded-xl py-3 px-5 font-semibold transition-all text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                              className="w-full bg-white hover:bg-white/90 text-gray-800 rounded-lg py-2 px-3 font-semibold transition-all text-xs flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg"
                             >
                               {"Explore Path"}
-                              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                             </button>
+                            <p className="mt-1.5 text-[10px] text-white/60 text-center">
+                              {"Click card for details"}
+                            </p>
                           </div>
-                          <p className="mt-3 text-xs text-white/70 text-center">
-                            {"Click anywhere on card to view full details"}
-                          </p>
                         </div>
                       </div>
                     ))}
@@ -621,12 +608,12 @@ function CareerExplorer({ formData }: { formData: any }) {
               </div>
             </div>
 
-            <div className="mt-12 text-center">
-              <p className="text-muted-foreground text-sm">
+            <div className="mt-6 text-center">
+              <p className="text-muted-foreground text-xs">
                 {secondaryNodes.length > 0
-                  ? "Click 'View Details' to see full information, or 'Explore Path' to see next steps"
+                  ? "Click cards to view details or explore paths"
                   : currentNodeId
-                  ? "Click 'View Full Career Details' above to see all information about this role"
+                  ? "Click the card above to view full details"
                   : "Explore careers that match your profile"}
               </p>
             </div>

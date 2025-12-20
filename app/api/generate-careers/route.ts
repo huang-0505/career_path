@@ -18,6 +18,10 @@ export async function POST(request: NextRequest) {
     })
 
     const prompt = `You are a career counselor helping a recent graduate explore career paths. Based on their background, generate exactly 3 career options in JSON format.
+    I want you to generate 3 careers that are related to the user's major and skills.
+    with one career that is related to the user's major and skills.
+    with two careers that are related to the user's skills, and would be a bit different from the traditional careers.
+    The whole point is to help the user to explore the career options that are not traditional, but still related to the user's major and skills.
 
 User's Major: ${major || "Not specified"}
 User's Skills: ${skills || "Not specified"}
