@@ -327,13 +327,14 @@ function CareerExplorer({ formData }: { formData: any }) {
         }
       } catch (error: any) {
         console.error("Error fetching careers:", error)
-        setCareerError(error.message || "Failed to load career options")
-        // Fallback to hardcoded careers on error
+        // Silently fall back to hardcoded careers - don't show error to user
+        // This handles cases where API key isn't configured or API fails
         const fallbackCareers = [
           CAREER_DATABASE.root.find((n) => n.id === "tech-pm") || CAREER_DATABASE.root[0],
           ...CAREER_DATABASE.root.slice(1, 3),
         ]
         setGeneratedCareers(fallbackCareers.filter(Boolean))
+        // Don't set careerError - just use fallback silently
       } finally {
         setIsLoadingCareers(false)
       }
