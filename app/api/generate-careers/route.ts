@@ -27,8 +27,8 @@ User's Major: ${major || "Not specified"}
 User's Skills: ${skills || "Not specified"}
 
 Requirements:
-1. First career should be "Product Manager" (standard option)
-2. Second and third careers should be customized based on the user's major and skills
+1. Second career should be the standard option, which is the most popular career related to the user's major and skills.
+2. First career and third careers should be customized based on the user's major and skills, but would be a bit different from the traditional careers.
 3. Each career must include all the following fields in this exact format:
 
 {

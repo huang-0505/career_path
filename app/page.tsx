@@ -297,6 +297,7 @@ function CareerExplorer({ formData }: { formData: any }) {
   const [generatedCareers, setGeneratedCareers] = useState<CareerNode[]>([])
   const [isLoadingCareers, setIsLoadingCareers] = useState(true)
   const [careerError, setCareerError] = useState<string | null>(null)
+  const [isContentReady, setIsContentReady] = useState(false)
 
   // Fetch careers from OpenAI API on mount
   useEffect(() => {
@@ -322,7 +323,15 @@ function CareerExplorer({ formData }: { formData: any }) {
 
         const data = await response.json()
         if (data.careers && Array.isArray(data.careers)) {
+          // Set careers first
           setGeneratedCareers(data.careers)
+          // Wait a frame to ensure DOM is ready, then show content
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              setIsContentReady(true)
+              setIsLoadingCareers(false)
+            })
+          })
         } else {
           throw new Error("Invalid response format")
         }
@@ -335,8 +344,13 @@ function CareerExplorer({ formData }: { formData: any }) {
           ...CAREER_DATABASE.root.slice(1, 3),
         ]
         setGeneratedCareers(fallbackCareers.filter(Boolean))
-      } finally {
-        setIsLoadingCareers(false)
+        // Wait a frame before showing fallback content
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setIsContentReady(true)
+            setIsLoadingCareers(false)
+          })
+        })
       }
     }
 
@@ -355,11 +369,16 @@ function CareerExplorer({ formData }: { formData: any }) {
 
   const handleExploreNode = (node: CareerNode) => {
     setIsTransitioning(true)
+    setIsContentReady(false) // Reset content ready state for smooth transition
     setTimeout(() => {
       setBreadcrumb([...breadcrumb, node.id])
       setCurrentNodeId(node.id)
       setCurrentNode(node) // Store the clicked node so we can display it
       setIsTransitioning(false)
+      // Mark content as ready after transition
+      requestAnimationFrame(() => {
+        setIsContentReady(true)
+      })
     }, 300)
   }
 
@@ -496,24 +515,25 @@ function CareerExplorer({ formData }: { formData: any }) {
               <div
                 className={`flex flex-col gap-3 transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"} h-full`}
               >
-                {isLoadingCareers && !currentNodeId ? (
+                {(isLoadingCareers || !isContentReady) && !currentNodeId ? (
                   <div className="flex flex-col gap-3 h-full">
                     {[1, 2, 3].map((idx) => (
                       <div
                         key={idx}
-                        className="flex-1 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 p-5 shadow-lg border border-white/20 animate-pulse"
+                        className="flex-1 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 p-5 shadow-lg border border-white/20 animate-pulse flex flex-col justify-between"
                       >
-                        <div className="h-4 bg-white/30 rounded-full w-16 mb-2"></div>
-                        <div className="h-5 bg-white/40 rounded w-2/3 mb-2"></div>
-                        <div className="h-3 bg-white/30 rounded w-full mb-1"></div>
-                        <div className="h-3 bg-white/30 rounded w-4/5"></div>
+                        <div>
+                          <div className="h-4 bg-white/30 rounded-full w-16 mb-2"></div>
+                          <div className="h-5 bg-white/40 rounded w-2/3 mb-2"></div>
+                          <div className="h-3 bg-white/30 rounded w-full mb-1"></div>
+                          <div className="h-3 bg-white/30 rounded w-4/5"></div>
+                        </div>
+                        <div className="mt-3">
+                          <div className="h-8 bg-white/40 rounded-lg w-full mb-1.5"></div>
+                          <div className="h-2 bg-white/20 rounded w-3/4 mx-auto"></div>
+                        </div>
                       </div>
                     ))}
-                    <div className="text-center py-4">
-                      <p className="text-sm text-muted-foreground animate-pulse">
-                        {"Generating personalized career options..."}
-                      </p>
-                    </div>
                   </div>
                 ) : careerError && !currentNodeId ? (
                   <div className="text-center py-12">
@@ -543,8 +563,8 @@ function CareerExplorer({ formData }: { formData: any }) {
                       {"Try again"}
                     </Button>
                   </div>
-                ) : (
-                  <>
+                ) : isContentReady ? (
+                  <div className="flex flex-col gap-3 h-full animate-fade-in">
                     {secondaryNodes.slice(0, 3).map((node, idx) => (
                       <div
                         key={node.id}
@@ -603,8 +623,8 @@ function CareerExplorer({ formData }: { formData: any }) {
                         </Button>
                       </div>
                     )}
-                  </>
-                )}
+                  </div>
+                ) : null}
               </div>
             </div>
 
