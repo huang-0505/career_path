@@ -551,8 +551,8 @@ function CareerExplorer({ formData }: { formData: any }) {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-[#FFF5F7] via-[#FFF9E6] to-[#F0F9FF] flex flex-col">
-        <header className="p-6 flex items-center justify-between border-b border-white/40">
+      <div className="min-h-screen bg-gradient-to-br from-[#FFF5F7] via-[#FFF9E6] to-[#F0F9FF] flex flex-col overflow-hidden">
+        <header className="flex-shrink-0 p-6 flex items-center justify-between border-b border-white/40">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-[#FF6B9D]" />
             <span className="font-semibold text-foreground">Career Explorer</span>
@@ -575,11 +575,11 @@ function CareerExplorer({ formData }: { formData: any }) {
           </div>
         </header>
 
-        <div className={`flex-1 flex ${showEndScreen ? 'items-start' : 'items-center'} justify-center p-8 overflow-y-auto`}>
-          <div className="w-full max-w-7xl">
+        <div className={`flex-1 overflow-y-auto ${showEndScreen ? 'flex items-start' : 'flex items-center'} justify-center p-8`}>
+          <div className={`w-full ${showEndScreen ? 'max-w-4xl mx-auto' : 'max-w-7xl'}`}>
             {showEndScreen ? (
               // End Screen - Show Full Path Tree as Vertical Flowchart
-              <div className="w-full max-w-4xl mx-auto py-8">
+              <div className="w-full py-8 min-h-full">
                 <div className="text-center mb-10">
                   <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-6 py-3 rounded-full mb-4 shadow-sm">
                     <Sparkles className="w-5 h-5 text-[#FF6B9D]" />
@@ -599,9 +599,9 @@ function CareerExplorer({ formData }: { formData: any }) {
                       <p className="text-muted-foreground">{"No career path data available"}</p>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center space-y-0">
+                    <div className="flex flex-col items-center space-y-0 pb-4">
                       {pathTree.map((career, idx) => (
-                      <div key={idx} className="flex flex-col items-center w-full">
+                      <div key={idx} className="flex flex-col items-center w-full mb-2">
                         {/* Career Card */}
                         <div className={`w-full max-w-md rounded-2xl bg-gradient-to-br ${career.color} p-6 shadow-xl border border-white/20 transition-all hover:shadow-2xl cursor-pointer`}
                           onClick={() => {
