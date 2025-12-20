@@ -548,11 +548,11 @@ function CareerExplorer({ formData }: { formData: any }) {
           </div>
         </header>
 
-        <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
+        <div className={`flex-1 flex ${showEndScreen ? 'items-start' : 'items-center'} justify-center p-8 overflow-y-auto`}>
           <div className="w-full max-w-7xl">
             {showEndScreen ? (
               // End Screen - Show Full Path Tree as Vertical Flowchart
-              <div className="w-full max-w-4xl mx-auto">
+              <div className="w-full max-w-4xl mx-auto py-8">
                 <div className="text-center mb-10">
                   <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-6 py-3 rounded-full mb-4 shadow-sm">
                     <Sparkles className="w-5 h-5 text-[#FF6B9D]" />
