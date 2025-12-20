@@ -3,7 +3,7 @@ import OpenAI from "openai"
 
 export async function POST(request: NextRequest) {
   try {
-    const { major, skills } = await request.json()
+    const { major, skills, parentCareer } = await request.json()
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -17,7 +17,30 @@ export async function POST(request: NextRequest) {
       apiKey: process.env.OPENAI_API_KEY,
     })
 
-    const prompt = `You are a career counselor helping a recent graduate explore career paths. Based on their background, generate exactly 3 career options in JSON format.
+    let prompt = ""
+    
+    if (parentCareer) {
+      // Generate next-level careers based on parent career
+      prompt = `You are a career counselor helping someone explore career progression paths. Based on their current career, generate exactly 3 next-step career options in JSON format.
+
+Current Career: ${parentCareer.title}
+Industry: ${parentCareer.industry}
+Description: ${parentCareer.description}
+
+User's Original Background:
+- Major: ${major || "Not specified"}
+- Skills: ${skills || "Not specified"}
+
+Requirements:
+1. Generate 3 career options that are natural next steps or transitions from "${parentCareer.title}"
+2. These should be realistic career progressions, lateral moves, or alternative paths
+3. One option should be a direct progression (e.g., Senior ${parentCareer.title}, Lead ${parentCareer.title})
+4. Two options should be interesting alternative paths or related roles
+5. Each career must include all the following fields in this exact format:
+`
+    } else {
+      // Root level - initial career exploration
+      prompt = `You are a career counselor helping a recent graduate explore career paths. Based on their background, generate exactly 3 career options in JSON format.
     I want you to generate 3 careers that are related to the user's major and skills.
     with one career that is related to the user's major and skills.
     with two careers that are related to the user's skills, and would be a bit different from the traditional careers.
@@ -30,6 +53,25 @@ Requirements:
 1. Second career should be the standard option, which is the most popular career related to the user's major and skills.
 2. First career and third careers should be customized based on the user's major and skills, but would be a bit different from the traditional careers.
 3. Each career must include all the following fields in this exact format:
+`
+    }
+
+    prompt += `
+{
+  "careers": [
+    {
+      "id": "unique-id",
+      "title": "Career Title",
+      "industry": "Industry Name",
+      "color": "from-[#HEX] to-[#HEX]",
+      "description": "Brief 1-2 sentence description",
+      "whyFits": ["Reason 1", "Reason 2"],
+      "skillGaps": ["Skill gap 1", "Skill gap 2"],
+      "suggestedActions": ["Action 1", "Action 2", "Action 3"],
+      "nextMoves": ["Next role 1", "Next role 2", "Next role 3"]
+    }
+  ]
+}
 
 {
   "careers": [

@@ -294,7 +294,7 @@ function CareerExplorer({ formData }: { formData: any }) {
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [selectedNode, setSelectedNode] = useState<CareerNode | null>(null)
   const [breadcrumb, setBreadcrumb] = useState<string[]>([])
-  const [generatedCareers, setGeneratedCareers] = useState<CareerNode[]>([])
+  const [generatedCareers, setGeneratedCareers] = useState<Record<string, CareerNode[]>>({})
   const [isLoadingCareers, setIsLoadingCareers] = useState(true)
   const [careerError, setCareerError] = useState<string | null>(null)
   const [isContentReady, setIsContentReady] = useState(false)
@@ -323,8 +323,8 @@ function CareerExplorer({ formData }: { formData: any }) {
 
         const data = await response.json()
         if (data.careers && Array.isArray(data.careers)) {
-          // Set careers first
-          setGeneratedCareers(data.careers)
+          // Set careers first (root level uses "root" as key)
+          setGeneratedCareers({ root: data.careers })
           // Wait a frame to ensure DOM is ready, then show content
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -343,7 +343,7 @@ function CareerExplorer({ formData }: { formData: any }) {
           CAREER_DATABASE.root.find((n) => n.id === "tech-pm") || CAREER_DATABASE.root[0],
           ...CAREER_DATABASE.root.slice(1, 3),
         ]
-        setGeneratedCareers(fallbackCareers.filter(Boolean))
+        setGeneratedCareers({ root: fallbackCareers.filter(Boolean) })
         // Wait a frame before showing fallback content
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
@@ -360,20 +360,114 @@ function CareerExplorer({ formData }: { formData: any }) {
   const getSecondaryNodes = (): CareerNode[] => {
     if (!currentNodeId) {
       // Root level: return generated careers from API
-      return generatedCareers.length > 0 ? generatedCareers : []
+      return generatedCareers.root || []
     }
-    // For next levels, use hardcoded database
-    // Check if the current node ID exists in the database
+    // Check if we have generated careers for this node
+    if (generatedCareers[currentNodeId]) {
+      return generatedCareers[currentNodeId]
+    }
+    // Fallback to hardcoded database if available
     return CAREER_DATABASE[currentNodeId] || []
   }
 
+  const fetchNextLevelCareers = async (parentNode: CareerNode) => {
+    setIsLoadingCareers(true)
+    setIsContentReady(false)
+    try {
+      const response = await fetch("/api/generate-careers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          major: formData.major,
+          skills: formData.skills,
+          parentCareer: parentNode,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to generate careers")
+      }
+
+      const data = await response.json()
+      if (data.careers && Array.isArray(data.careers)) {
+        // Store careers for this node ID
+        setGeneratedCareers((prev) => ({
+          ...prev,
+          [parentNode.id]: data.careers,
+        }))
+        // Wait a frame to ensure DOM is ready, then show content
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setIsContentReady(true)
+            setIsLoadingCareers(false)
+          })
+        })
+      } else {
+        throw new Error("Invalid response format")
+      }
+    } catch (error: any) {
+      console.error("Error fetching next level careers:", error)
+      // Fallback to empty array or hardcoded if available
+      const fallback = CAREER_DATABASE[parentNode.id] || []
+      setGeneratedCareers((prev) => ({
+        ...prev,
+        [parentNode.id]: fallback,
+      }))
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsContentReady(true)
+          setIsLoadingCareers(false)
+        })
+      })
+    }
+  }
+
   const handleExploreNode = (node: CareerNode) => {
+    // Don't allow exploring beyond max steps
+    const nextStep = breadcrumb.length + 2 // +1 for current, +1 for next
+    if (nextStep > maxSteps) {
+      return
+    }
+    
     setIsTransitioning(true)
     setIsContentReady(false) // Reset content ready state for smooth transition
     setTimeout(() => {
-      setBreadcrumb([...breadcrumb, node.id])
+      const newBreadcrumb = [...breadcrumb, node.id]
+      setBreadcrumb(newBreadcrumb)
       setCurrentNodeId(node.id)
       setCurrentNode(node) // Store the clicked node so we can display it
+      setIsTransitioning(false)
+      
+      // Only fetch next level if we haven't reached max steps
+      if (newBreadcrumb.length + 1 < maxSteps) {
+        fetchNextLevelCareers(node)
+      }
+    }, 300)
+  }
+
+  const handleGoBack = () => {
+    if (breadcrumb.length === 0) return
+    setIsTransitioning(true)
+    setIsContentReady(false)
+    setTimeout(() => {
+      const newBreadcrumb = breadcrumb.slice(0, -1)
+      setBreadcrumb(newBreadcrumb)
+      const prevNodeId = newBreadcrumb.length > 0 ? newBreadcrumb[newBreadcrumb.length - 1] : null
+      setCurrentNodeId(prevNodeId)
+      
+      // Restore the previous node
+      if (prevNodeId) {
+        // Find the previous node from generated careers or hardcoded database
+        const allGenerated = Object.values(generatedCareers).flat()
+        const prevNode = allGenerated.find((n) => n.id === prevNodeId) || 
+                        Object.values(CAREER_DATABASE).flat().find((n) => n.id === prevNodeId)
+        setCurrentNode(prevNode || null)
+      } else {
+        setCurrentNode(null)
+      }
       setIsTransitioning(false)
       // Mark content as ready after transition
       requestAnimationFrame(() => {
@@ -382,29 +476,9 @@ function CareerExplorer({ formData }: { formData: any }) {
     }, 300)
   }
 
-  const handleGoBack = () => {
-    if (breadcrumb.length === 0) return
-    setIsTransitioning(true)
-    setTimeout(() => {
-      const newBreadcrumb = breadcrumb.slice(0, -1)
-      setBreadcrumb(newBreadcrumb)
-      const prevNodeId = newBreadcrumb.length > 0 ? newBreadcrumb[newBreadcrumb.length - 1] : null
-      setCurrentNodeId(prevNodeId)
-      
-      // Restore the previous node or clear it
-      if (prevNodeId) {
-        const allNodes = Object.values(CAREER_DATABASE).flat()
-        const prevNode = allNodes.find((n) => n.id === prevNodeId)
-        setCurrentNode(prevNode || null)
-      } else {
-        setCurrentNode(null)
-      }
-      setIsTransitioning(false)
-    }, 300)
-  }
-
   const secondaryNodes = getSecondaryNodes()
   const step = breadcrumb.length + 1
+  const maxSteps = 4 // Allow at least 4 steps
 
   return (
     <>
@@ -427,7 +501,7 @@ function CareerExplorer({ formData }: { formData: any }) {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{"Step"}</span>
               <span className="font-semibold text-foreground">{step}</span>
-              <span>{"of 3"}</span>
+              <span>{`of ${maxSteps}`}</span>
             </div>
           </div>
         </header>
@@ -515,7 +589,7 @@ function CareerExplorer({ formData }: { formData: any }) {
               <div
                 className={`flex flex-col gap-3 transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"} h-full`}
               >
-                {(isLoadingCareers || !isContentReady) && !currentNodeId ? (
+                {(isLoadingCareers || !isContentReady) ? (
                   <div className="flex flex-col gap-3 h-full">
                     {[1, 2, 3].map((idx) => (
                       <div
@@ -610,7 +684,7 @@ function CareerExplorer({ formData }: { formData: any }) {
                       </div>
                     ))}
 
-                    {secondaryNodes.length === 0 && currentNodeId && (
+                    {secondaryNodes.length === 0 && currentNodeId && step >= maxSteps && (
                       <div className="text-center py-12">
                         <p className="text-muted-foreground mb-2 text-lg font-medium">
                           {"You've explored this career path!"}
@@ -621,6 +695,13 @@ function CareerExplorer({ formData }: { formData: any }) {
                         <Button onClick={handleGoBack} className="bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl px-6">
                           {"← Go Back"}
                         </Button>
+                      </div>
+                    )}
+                    {secondaryNodes.length === 0 && currentNodeId && step < maxSteps && (
+                      <div className="text-center py-12">
+                        <p className="text-muted-foreground mb-4 text-sm animate-pulse">
+                          {"Loading next career options..."}
+                        </p>
                       </div>
                     )}
                   </div>
