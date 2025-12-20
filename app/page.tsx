@@ -289,6 +289,7 @@ const CAREER_DATABASE: Record<string, CareerNode[]> = {
 
 function CareerExplorer({ formData }: { formData: any }) {
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null)
+  const [currentNode, setCurrentNode] = useState<CareerNode | null>(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [selectedNode, setSelectedNode] = useState<CareerNode | null>(null)
@@ -327,14 +328,13 @@ function CareerExplorer({ formData }: { formData: any }) {
         }
       } catch (error: any) {
         console.error("Error fetching careers:", error)
-        // Silently fall back to hardcoded careers - don't show error to user
-        // This handles cases where API key isn't configured or API fails
+        setCareerError(error.message || "Failed to load career options")
+        // Fallback to hardcoded careers on error
         const fallbackCareers = [
           CAREER_DATABASE.root.find((n) => n.id === "tech-pm") || CAREER_DATABASE.root[0],
           ...CAREER_DATABASE.root.slice(1, 3),
         ]
         setGeneratedCareers(fallbackCareers.filter(Boolean))
-        // Don't set careerError - just use fallback silently
       } finally {
         setIsLoadingCareers(false)
       }
@@ -343,18 +343,13 @@ function CareerExplorer({ formData }: { formData: any }) {
     fetchCareers()
   }, [formData.major, formData.skills])
 
-  const getCurrentNodeData = (): CareerNode | null => {
-    if (!currentNodeId) return null
-    const allNodes = Object.values(CAREER_DATABASE).flat()
-    return allNodes.find((n) => n.id === currentNodeId) || null
-  }
-
   const getSecondaryNodes = (): CareerNode[] => {
     if (!currentNodeId) {
       // Root level: return generated careers from API
       return generatedCareers.length > 0 ? generatedCareers : []
     }
     // For next levels, use hardcoded database
+    // Check if the current node ID exists in the database
     return CAREER_DATABASE[currentNodeId] || []
   }
 
@@ -363,6 +358,7 @@ function CareerExplorer({ formData }: { formData: any }) {
     setTimeout(() => {
       setBreadcrumb([...breadcrumb, node.id])
       setCurrentNodeId(node.id)
+      setCurrentNode(node) // Store the clicked node so we can display it
       setIsTransitioning(false)
     }, 300)
   }
@@ -373,12 +369,21 @@ function CareerExplorer({ formData }: { formData: any }) {
     setTimeout(() => {
       const newBreadcrumb = breadcrumb.slice(0, -1)
       setBreadcrumb(newBreadcrumb)
-      setCurrentNodeId(newBreadcrumb.length > 0 ? newBreadcrumb[newBreadcrumb.length - 1] : null)
+      const prevNodeId = newBreadcrumb.length > 0 ? newBreadcrumb[newBreadcrumb.length - 1] : null
+      setCurrentNodeId(prevNodeId)
+      
+      // Restore the previous node or clear it
+      if (prevNodeId) {
+        const allNodes = Object.values(CAREER_DATABASE).flat()
+        const prevNode = allNodes.find((n) => n.id === prevNodeId)
+        setCurrentNode(prevNode || null)
+      } else {
+        setCurrentNode(null)
+      }
       setIsTransitioning(false)
     }, 300)
   }
 
-  const currentNode = getCurrentNodeData()
   const secondaryNodes = getSecondaryNodes()
   const step = breadcrumb.length + 1
 
@@ -410,16 +415,33 @@ function CareerExplorer({ formData }: { formData: any }) {
 
         <div className="flex-1 flex items-center justify-center p-12">
           <div className="w-full max-w-7xl">
-            <div className="grid grid-cols-[1fr_1.5fr] gap-12 items-center">
+            <div className="grid grid-cols-[1fr_1.5fr] gap-12 items-center relative">
+              {/* Visual flow indicator - arrow pointing from main to secondary nodes */}
+              {currentNode && secondaryNodes.length > 0 && (
+                <div className="absolute left-[calc(50%-6rem)] top-1/2 -translate-y-1/2 z-0 hidden lg:block">
+                  <ArrowRight className="w-12 h-12 text-[#FF6B9D]/30" />
+                </div>
+              )}
+              
               <div
                 className={`transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
               >
-                <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/50 h-full flex flex-col justify-between">
+                <div 
+                  onClick={() => {
+                    if (currentNode) {
+                      setSelectedNode(currentNode)
+                      setDetailsOpen(true)
+                    }
+                  }}
+                  className={`bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/50 h-full flex flex-col justify-between transition-all ${
+                    currentNode ? "cursor-pointer hover:shadow-xl hover:scale-[1.02] hover:border-[#FF6B9D]/30" : ""
+                  }`}
+                >
                   <div>
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
                       {currentNode ? "Current Path" : "Your Profile"}
                     </h3>
-                    <h2 className="text-3xl font-bold text-foreground mb-6">
+                    <h2 className="text-2xl font-bold text-foreground mb-6">
                       {currentNode ? currentNode.title : "Let's explore!"}
                     </h2>
 
@@ -438,14 +460,19 @@ function CareerExplorer({ formData }: { formData: any }) {
                           <p className="text-sm text-foreground leading-relaxed">{currentNode.description}</p>
                         </div>
                         <button
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation()
                             setSelectedNode(currentNode)
                             setDetailsOpen(true)
                           }}
-                          className="mt-6 w-full bg-[#FF6B9D]/10 hover:bg-[#FF6B9D]/20 text-[#FF6B9D] rounded-xl py-2 px-4 font-medium transition-colors text-sm"
+                          className="mt-6 w-full bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl py-3 px-6 font-semibold transition-all text-base shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                         >
-                          {"View full details"}
+                          <Sparkles className="w-4 h-4" />
+                          {"View Full Career Details"}
                         </button>
+                        <p className="mt-2 text-xs text-muted-foreground text-center">
+                          {"Or click anywhere on this card"}
+                        </p>
                       </div>
                     ) : (
                       <div className="space-y-4">
@@ -470,7 +497,7 @@ function CareerExplorer({ formData }: { formData: any }) {
                   <div className="mt-8 pt-6 border-t border-border">
                     <p className="text-xs text-muted-foreground text-center">
                       {currentNode
-                        ? "Click 'View full details' to learn more, or explore other paths →"
+                        ? "Click this card to view full details, or explore paths →"
                         : "Explore careers that match your profile"}
                     </p>
                   </div>
@@ -530,37 +557,62 @@ function CareerExplorer({ formData }: { formData: any }) {
                 ) : (
                   <>
                     {secondaryNodes.slice(0, 3).map((node, idx) => (
-                      <button
+                      <div
                         key={node.id}
-                        onClick={() => handleExploreNode(node)}
-                        className="group text-left w-full transition-all duration-500 hover:scale-105 active:scale-95"
+                        className="group w-full transition-all duration-500 hover:scale-[1.02] relative"
                       >
+                        {/* Visual flow indicator - connecting line from main node */}
+                        {currentNode && (
+                          <div className="absolute -left-6 top-1/2 -translate-y-1/2 hidden lg:block">
+                            <div className="w-6 h-0.5 bg-gradient-to-r from-[#FF6B9D]/20 to-transparent"></div>
+                          </div>
+                        )}
                         <div
-                          className={`w-full rounded-2xl bg-gradient-to-br ${node.color} p-8 shadow-lg border border-white/20 transition-all duration-300 hover:shadow-2xl`}
+                          onClick={() => {
+                            setSelectedNode(node)
+                            setDetailsOpen(true)
+                          }}
+                          className={`w-full rounded-2xl bg-gradient-to-br ${node.color} p-10 shadow-xl border border-white/20 transition-all duration-300 hover:shadow-2xl cursor-pointer`}
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
                               <div className="inline-block bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-white mb-3">
                                 {node.industry}
                               </div>
-                              <h4 className="text-2xl font-bold text-white mb-2 text-balance">{node.title}</h4>
-                              <p className="text-white/90 text-sm leading-relaxed">{node.description}</p>
+                              <h4 className="text-3xl font-bold text-white mb-3 text-balance">{node.title}</h4>
+                              <p className="text-white/90 text-base leading-relaxed mb-4">{node.description}</p>
                             </div>
                           </div>
 
-                          <div className="mt-6 flex items-center justify-between">
-                            <span className="text-sm font-medium text-white/80">{"Click to learn more →"}</span>
-                            <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-2 transition-transform duration-300" />
+                          <div className="mt-6 flex items-center gap-3">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleExploreNode(node)
+                              }}
+                              className="flex-1 bg-white hover:bg-white/90 text-gray-800 rounded-xl py-3 px-5 font-semibold transition-all text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                            >
+                              {"Explore Path"}
+                              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            </button>
                           </div>
+                          <p className="mt-3 text-xs text-white/70 text-center">
+                            {"Click anywhere on card to view full details"}
+                          </p>
                         </div>
-                      </button>
+                      </div>
                     ))}
 
-                    {secondaryNodes.length === 0 && (
+                    {secondaryNodes.length === 0 && currentNodeId && (
                       <div className="text-center py-12">
-                        <p className="text-muted-foreground mb-4">{"No more paths to explore from here."}</p>
-                        <Button onClick={handleGoBack} className="bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl">
-                          {"Go back"}
+                        <p className="text-muted-foreground mb-2 text-lg font-medium">
+                          {"You've explored this career path!"}
+                        </p>
+                        <p className="text-muted-foreground mb-6 text-sm">
+                          {"Click 'View Full Career Details' above to see all information about this role, or go back to explore other paths."}
+                        </p>
+                        <Button onClick={handleGoBack} className="bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl px-6">
+                          {"← Go Back"}
                         </Button>
                       </div>
                     )}
@@ -570,10 +622,12 @@ function CareerExplorer({ formData }: { formData: any }) {
             </div>
 
             <div className="mt-12 text-center">
-              <p className="text-muted-foreground text-sm animate-pulse">
+              <p className="text-muted-foreground text-sm">
                 {secondaryNodes.length > 0
-                  ? "Click a career card to explore that path"
-                  : "You've reached the end of this exploration"}
+                  ? "Click 'View Details' to see full information, or 'Explore Path' to see next steps"
+                  : currentNodeId
+                  ? "Click 'View Full Career Details' above to see all information about this role"
+                  : "Explore careers that match your profile"}
               </p>
             </div>
           </div>
@@ -586,7 +640,7 @@ function CareerExplorer({ formData }: { formData: any }) {
           onClick={() => setDetailsOpen(false)}
         >
           <div
-            className="w-full max-w-4xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-slide-up"
+            className="w-[80vw] max-w-6xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className={`h-32 bg-gradient-to-br ${selectedNode.color} p-8 flex items-end`}>
