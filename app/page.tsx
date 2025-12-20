@@ -29,89 +29,89 @@ export default function OnboardingPage() {
           isExploring ? "-translate-x-full" : "translate-x-0"
         }`}
       >
-        <div className="w-full max-w-2xl">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-sm">
-              <Sparkles className="w-4 h-4 text-[#FF6B9D]" />
-              <span className="text-sm font-medium text-foreground">Career Explorer</span>
+      <div className="w-full max-w-2xl">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-sm">
+            <Sparkles className="w-4 h-4 text-[#FF6B9D]" />
+            <span className="text-sm font-medium text-foreground">Career Explorer</span>
+          </div>
+          <h1 className="text-5xl font-bold mb-4 text-balance text-foreground">{"Discover your path forward"}</h1>
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto text-pretty">
+            {"Explore career possibilities that match your background. No pressure, just inspiration."}
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/50"
+        >
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="major" className="block text-sm font-medium mb-2 text-foreground">
+                {"What did you study?"}
+              </label>
+              <Input
+                id="major"
+                type="text"
+                placeholder="e.g., Computer Science, Psychology, Marketing..."
+                value={formData.major}
+                onChange={(e) => setFormData({ ...formData, major: e.target.value })}
+                required
+                className="bg-white border-border/50 focus:border-[#FF6B9D] transition-colors"
+              />
             </div>
-            <h1 className="text-5xl font-bold mb-4 text-balance text-foreground">{"Discover your path forward"}</h1>
-            <p className="text-lg text-muted-foreground max-w-xl mx-auto text-pretty">
-              {"Explore career possibilities that match your background. No pressure, just inspiration."}
-            </p>
+
+            <div>
+              <label htmlFor="skills" className="block text-sm font-medium mb-2 text-foreground">
+                {"What are you good at?"}
+              </label>
+              <Textarea
+                id="skills"
+                placeholder="Tell us about your skills, interests, or experiences..."
+                value={formData.skills}
+                onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                required
+                rows={4}
+                className="bg-white border-border/50 focus:border-[#FF6B9D] transition-colors resize-none"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="resume" className="block text-sm font-medium mb-2 text-foreground">
+                {"Resume (optional)"}
+              </label>
+              <div className="relative">
+                <input
+                  id="resume"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) => setFormData({ ...formData, resume: e.target.files?.[0] || null })}
+                  className="sr-only"
+                />
+                <label
+                  htmlFor="resume"
+                  className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-border/50 rounded-xl hover:border-[#FF6B9D] transition-colors cursor-pointer bg-white/50"
+                >
+                  <span className="text-sm text-muted-foreground">
+                    {formData.resume ? formData.resume.name : "Click to upload or drag and drop"}
+                  </span>
+                </label>
+              </div>
+            </div>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/50"
+          <Button
+            type="submit"
+            className="w-full mt-8 bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl h-12 text-base font-medium shadow-md transition-all hover:shadow-lg"
           >
-            <div className="space-y-6">
-              <div>
-                <label htmlFor="major" className="block text-sm font-medium mb-2 text-foreground">
-                  {"What did you study?"}
-                </label>
-                <Input
-                  id="major"
-                  type="text"
-                  placeholder="e.g., Computer Science, Psychology, Marketing..."
-                  value={formData.major}
-                  onChange={(e) => setFormData({ ...formData, major: e.target.value })}
-                  required
-                  className="bg-white border-border/50 focus:border-[#FF6B9D] transition-colors"
-                />
-              </div>
+            {"Start Exploring"}
+            <ArrowRight className="ml-2 w-5 h-5" />
+          </Button>
+        </form>
 
-              <div>
-                <label htmlFor="skills" className="block text-sm font-medium mb-2 text-foreground">
-                  {"What are you good at?"}
-                </label>
-                <Textarea
-                  id="skills"
-                  placeholder="Tell us about your skills, interests, or experiences..."
-                  value={formData.skills}
-                  onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                  required
-                  rows={4}
-                  className="bg-white border-border/50 focus:border-[#FF6B9D] transition-colors resize-none"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="resume" className="block text-sm font-medium mb-2 text-foreground">
-                  {"Resume (optional)"}
-                </label>
-                <div className="relative">
-                  <input
-                    id="resume"
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) => setFormData({ ...formData, resume: e.target.files?.[0] || null })}
-                    className="sr-only"
-                  />
-                  <label
-                    htmlFor="resume"
-                    className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-border/50 rounded-xl hover:border-[#FF6B9D] transition-colors cursor-pointer bg-white/50"
-                  >
-                    <span className="text-sm text-muted-foreground">
-                      {formData.resume ? formData.resume.name : "Click to upload or drag and drop"}
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full mt-8 bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl h-12 text-base font-medium shadow-md transition-all hover:shadow-lg"
-            >
-              {"Start Exploring"}
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </form>
-
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            {"This takes less than a minute · No account needed"}
-          </p>
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          {"This takes less than a minute · No account needed"}
+        </p>
         </div>
       </div>
 
@@ -442,8 +442,13 @@ function CareerExplorer({ formData }: { formData: any }) {
       setIsTransitioning(false)
       
       // Only fetch next level if we haven't reached max steps
+      // At step 4, we show the end screen instead
       if (newBreadcrumb.length + 1 < maxSteps) {
         fetchNextLevelCareers(node)
+      } else {
+        // We've reached the end, mark content as ready to show end screen
+        setIsContentReady(true)
+        setIsLoadingCareers(false)
       }
     }, 300)
   }
@@ -479,6 +484,34 @@ function CareerExplorer({ formData }: { formData: any }) {
   const secondaryNodes = getSecondaryNodes()
   const step = breadcrumb.length + 1
   const maxSteps = 4 // Allow at least 4 steps
+  const showEndScreen = step >= maxSteps && currentNodeId !== null
+
+  // Build the full path tree for end screen
+  const buildPathTree = (): CareerNode[] => {
+    const path: CareerNode[] = []
+    
+    if (breadcrumb.length === 0) return path
+    
+    // Get root level careers - first choice
+    const rootCareers = generatedCareers.root || []
+    const firstCareer = rootCareers.find((c) => c.id === breadcrumb[0])
+    if (firstCareer) path.push(firstCareer)
+    
+    // Get careers from each subsequent level
+    for (let i = 0; i < breadcrumb.length - 1; i++) {
+      const nodeId = breadcrumb[i]
+      const levelCareers = generatedCareers[nodeId] || []
+      const nextCareer = levelCareers.find((c) => c.id === breadcrumb[i + 1])
+      if (nextCareer) path.push(nextCareer)
+    }
+    
+    // Add the current node (final destination)
+    if (currentNode) path.push(currentNode)
+    
+    return path
+  }
+
+  const pathTree = buildPathTree()
 
   return (
     <>
@@ -506,9 +539,68 @@ function CareerExplorer({ formData }: { formData: any }) {
           </div>
         </header>
 
-        <div className="flex-1 flex items-center justify-center p-8">
+        <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
           <div className="w-full max-w-7xl">
-            <div className="grid grid-cols-[0.9fr_2fr] gap-8 items-center relative">
+            {showEndScreen ? (
+              // End Screen - Show Full Path Tree
+              <div className="w-full max-w-5xl mx-auto">
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-6 py-3 rounded-full mb-4 shadow-sm">
+                    <Sparkles className="w-5 h-5 text-[#FF6B9D]" />
+                    <span className="text-lg font-semibold text-foreground">Your Career Exploration Journey</span>
+                  </div>
+                  <h1 className="text-4xl font-bold mb-3 text-foreground">{"Here's Your Path Forward"}</h1>
+                  <p className="text-muted-foreground text-lg">
+                    {"You've explored a personalized career path based on your background"}
+                  </p>
+                </div>
+
+                <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/50 mb-6">
+                  <h2 className="text-xl font-bold mb-6 text-foreground">{"Your Career Path"}</h2>
+                  <div className="space-y-4">
+                    {pathTree.map((career, idx) => (
+                      <div key={idx} className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#FF6B9D] to-[#FF5689] flex items-center justify-center text-white font-bold text-sm shadow-md">
+                          {idx + 1}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-bold text-foreground">{career.title}</h3>
+                            <span className="px-3 py-1 bg-muted rounded-full text-xs font-medium text-muted-foreground">
+                              {career.industry}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{career.description}</p>
+                          {idx < pathTree.length - 1 && (
+                            <div className="flex items-center justify-center my-4">
+                              <ArrowRight className="w-5 h-5 text-[#FF6B9D]" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="text-center space-y-4">
+                  <p className="text-muted-foreground">
+                    {"Want to explore a different path? Go back and try other options!"}
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setBreadcrumb([])
+                      setCurrentNodeId(null)
+                      setCurrentNode(null)
+                      setIsContentReady(true)
+                    }}
+                    className="bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl px-8 py-3 text-base font-semibold"
+                  >
+                    {"Start New Exploration"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-[0.9fr_2fr] gap-8 items-center relative">
               {/* Visual flow indicator - arrow pointing from main to secondary nodes */}
               {currentNode && secondaryNodes.length > 0 && (
                 <div className="absolute left-[calc(50%-6rem)] top-1/2 -translate-y-1/2 z-0 hidden lg:block">
@@ -657,9 +749,9 @@ function CareerExplorer({ formData }: { formData: any }) {
                           }}
                           className={`w-full h-full rounded-xl bg-gradient-to-br ${node.color} p-5 shadow-lg border border-white/20 transition-all duration-300 hover:shadow-xl cursor-pointer flex flex-col justify-between`}
                         >
-                          <div className="flex-1">
+                        <div className="flex-1">
                             <div className="inline-block bg-white/30 backdrop-blur-sm px-2 py-0.5 rounded-full text-xs font-medium text-white mb-2">
-                              {node.industry}
+                            {node.industry}
                             </div>
                             <h4 className="text-lg font-bold text-white mb-1.5 text-balance line-clamp-1">{node.title}</h4>
                             <p className="text-white/90 text-xs leading-relaxed line-clamp-2 mb-3">{node.description}</p>
@@ -684,19 +776,6 @@ function CareerExplorer({ formData }: { formData: any }) {
                       </div>
                     ))}
 
-                    {secondaryNodes.length === 0 && currentNodeId && step >= maxSteps && (
-                      <div className="text-center py-12">
-                        <p className="text-muted-foreground mb-2 text-lg font-medium">
-                          {"You've explored this career path!"}
-                        </p>
-                        <p className="text-muted-foreground mb-6 text-sm">
-                          {"Click 'View Full Career Details' above to see all information about this role, or go back to explore other paths."}
-                        </p>
-                        <Button onClick={handleGoBack} className="bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl px-6">
-                          {"← Go Back"}
-                        </Button>
-                      </div>
-                    )}
                     {secondaryNodes.length === 0 && currentNodeId && step < maxSteps && (
                       <div className="text-center py-12">
                         <p className="text-muted-foreground mb-4 text-sm animate-pulse">
@@ -718,6 +797,8 @@ function CareerExplorer({ formData }: { formData: any }) {
                   : "Explore careers that match your profile"}
               </p>
             </div>
+          </div>
+            )}
           </div>
         </div>
       </div>
