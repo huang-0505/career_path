@@ -413,9 +413,9 @@ function CareerExplorer({ formData }: { formData: any }) {
           </div>
         </header>
 
-        <div className="flex-1 flex items-center justify-center p-12">
+        <div className="flex-1 flex items-start justify-center p-12 overflow-y-auto">
           <div className="w-full max-w-7xl">
-            <div className="grid grid-cols-[1fr_1.5fr] gap-12 items-center relative">
+            <div className="grid grid-cols-[1fr_1.5fr] gap-12 items-start relative">
               {/* Visual flow indicator - arrow pointing from main to secondary nodes */}
               {currentNode && secondaryNodes.length > 0 && (
                 <div className="absolute left-[calc(50%-6rem)] top-1/2 -translate-y-1/2 z-0 hidden lg:block">
@@ -424,7 +424,7 @@ function CareerExplorer({ formData }: { formData: any }) {
               )}
               
               <div
-                className={`transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
+                className={`transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"} max-h-[calc(100vh-12rem)]`}
               >
                 <div 
                   onClick={() => {
@@ -433,7 +433,7 @@ function CareerExplorer({ formData }: { formData: any }) {
                       setDetailsOpen(true)
                     }
                   }}
-                  className={`bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/50 h-full flex flex-col justify-between transition-all ${
+                  className={`bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/50 flex flex-col justify-between transition-all ${
                     currentNode ? "cursor-pointer hover:shadow-xl hover:scale-[1.02] hover:border-[#FF6B9D]/30" : ""
                   }`}
                 >
@@ -505,7 +505,7 @@ function CareerExplorer({ formData }: { formData: any }) {
               </div>
 
               <div
-                className={`space-y-4 transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
+                className={`space-y-4 transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"} max-h-[calc(100vh-12rem)] overflow-y-auto pr-2`}
               >
                 {isLoadingCareers && !currentNodeId ? (
                   <div className="space-y-4">
@@ -572,15 +572,15 @@ function CareerExplorer({ formData }: { formData: any }) {
                             setSelectedNode(node)
                             setDetailsOpen(true)
                           }}
-                          className={`w-full rounded-2xl bg-gradient-to-br ${node.color} p-10 shadow-xl border border-white/20 transition-all duration-300 hover:shadow-2xl cursor-pointer`}
+                          className={`w-full rounded-2xl bg-gradient-to-br ${node.color} p-8 shadow-xl border border-white/20 transition-all duration-300 hover:shadow-2xl cursor-pointer`}
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
                               <div className="inline-block bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-white mb-3">
                                 {node.industry}
                               </div>
-                              <h4 className="text-3xl font-bold text-white mb-3 text-balance">{node.title}</h4>
-                              <p className="text-white/90 text-base leading-relaxed mb-4">{node.description}</p>
+                              <h4 className="text-2xl font-bold text-white mb-2 text-balance">{node.title}</h4>
+                              <p className="text-white/90 text-sm leading-relaxed mb-4">{node.description}</p>
                             </div>
                           </div>
 
