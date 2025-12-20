@@ -490,36 +490,43 @@ function CareerExplorer({ formData }: { formData: any }) {
   const buildPathTree = (): CareerNode[] => {
     const path: CareerNode[] = []
     
+    // If no breadcrumb, return empty or just currentNode
     if (breadcrumb.length === 0) {
-      // If no breadcrumb but we have currentNode, show it
       if (currentNode) path.push(currentNode)
       return path
     }
     
-    // Get root level careers - first choice
+    // Step 1: Get the first career from root level
     const rootCareers = generatedCareers.root || []
-    const firstCareer = rootCareers.find((c) => c.id === breadcrumb[0])
+    const firstCareerId = breadcrumb[0]
+    const firstCareer = rootCareers.find((c) => c.id === firstCareerId)
     if (firstCareer) {
       path.push(firstCareer)
     }
     
-    // Get careers from each subsequent level
-    // breadcrumb[i] is the parent, breadcrumb[i+1] is the child chosen from that parent
-    for (let i = 0; i < breadcrumb.length - 1; i++) {
-      const parentId = breadcrumb[i]
-      const childId = breadcrumb[i + 1]
-      const levelCareers = generatedCareers[parentId] || []
-      const chosenCareer = levelCareers.find((c) => c.id === childId)
+    // Step 2-N: For each subsequent choice in breadcrumb, find it in the parent's generated careers
+    // breadcrumb structure: [firstChoice, secondChoice, thirdChoice, ...]
+    // Each choice after the first comes from the careers generated for the previous choice
+    for (let i = 1; i < breadcrumb.length; i++) {
+      const chosenCareerId = breadcrumb[i]
+      const parentId = breadcrumb[i - 1] // The previous career that generated these options
+      const parentCareers = generatedCareers[parentId] || []
+      const chosenCareer = parentCareers.find((c) => c.id === chosenCareerId)
       if (chosenCareer) {
         path.push(chosenCareer)
+      } else {
+        // Fallback: try to find in all generated careers if not found in parent
+        const allGenerated = Object.values(generatedCareers).flat()
+        const fallbackCareer = allGenerated.find((c) => c.id === chosenCareerId)
+        if (fallbackCareer) path.push(fallbackCareer)
       }
     }
     
-    // Add the current node (final destination) - this is the last choice made
+    // Always add currentNode as the final step (it's the current destination)
+    // This ensures we show the complete path including the final choice
     if (currentNode) {
-      // Only add if it's different from the last item in path
-      const lastPathItem = path[path.length - 1]
-      if (!lastPathItem || lastPathItem.id !== currentNode.id) {
+      const lastPathId = path.length > 0 ? path[path.length - 1]?.id : null
+      if (currentNode.id !== lastPathId) {
         path.push(currentNode)
       }
     }
@@ -528,6 +535,19 @@ function CareerExplorer({ formData }: { formData: any }) {
   }
 
   const pathTree = buildPathTree()
+  
+  // Debug: Log path tree to help diagnose issues
+  if (showEndScreen) {
+    console.log('End Screen Debug:', {
+      breadcrumb,
+      breadcrumbLength: breadcrumb.length,
+      currentNodeId,
+      currentNode: currentNode?.title,
+      generatedCareersKeys: Object.keys(generatedCareers),
+      pathTreeLength: pathTree.length,
+      pathTree: pathTree.map(c => c.title)
+    })
+  }
 
   return (
     <>
@@ -574,8 +594,13 @@ function CareerExplorer({ formData }: { formData: any }) {
                 {/* Vertical Flowchart */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/50 mb-6">
                   <h2 className="text-xl font-bold mb-8 text-center text-foreground">{"Your Career Path"}</h2>
-                  <div className="flex flex-col items-center space-y-0">
-                    {pathTree.map((career, idx) => (
+                  {pathTree.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">{"No career path data available"}</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center space-y-0">
+                      {pathTree.map((career, idx) => (
                       <div key={idx} className="flex flex-col items-center w-full">
                         {/* Career Card */}
                         <div className={`w-full max-w-md rounded-2xl bg-gradient-to-br ${career.color} p-6 shadow-xl border border-white/20 transition-all hover:shadow-2xl cursor-pointer`}
@@ -609,8 +634,9 @@ function CareerExplorer({ formData }: { formData: any }) {
                           </div>
                         )}
                       </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
