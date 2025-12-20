@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -21,95 +21,107 @@ export default function OnboardingPage() {
     setIsExploring(true)
   }
 
-  if (isExploring) {
-    return <CareerExplorer formData={formData} />
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF5F7] via-[#FFF9E6] to-[#F0F9FF] flex items-center justify-center p-6">
-      <div className="w-full max-w-2xl">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-sm">
-            <Sparkles className="w-4 h-4 text-[#FF6B9D]" />
-            <span className="text-sm font-medium text-foreground">Career Explorer</span>
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* Onboarding Page */}
+      <div
+        className={`absolute inset-0 min-h-screen bg-gradient-to-br from-[#FFF5F7] via-[#FFF9E6] to-[#F0F9FF] flex items-center justify-center p-6 transition-transform duration-700 ease-in-out ${
+          isExploring ? "-translate-x-full" : "translate-x-0"
+        }`}
+      >
+        <div className="w-full max-w-2xl">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-sm">
+              <Sparkles className="w-4 h-4 text-[#FF6B9D]" />
+              <span className="text-sm font-medium text-foreground">Career Explorer</span>
+            </div>
+            <h1 className="text-5xl font-bold mb-4 text-balance text-foreground">{"Discover your path forward"}</h1>
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto text-pretty">
+              {"Explore career possibilities that match your background. No pressure, just inspiration."}
+            </p>
           </div>
-          <h1 className="text-5xl font-bold mb-4 text-balance text-foreground">{"Discover your path forward"}</h1>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto text-pretty">
-            {"Explore career possibilities that match your background. No pressure, just inspiration."}
-          </p>
-        </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/50"
-        >
-          <div className="space-y-6">
-            <div>
-              <label htmlFor="major" className="block text-sm font-medium mb-2 text-foreground">
-                {"What did you study?"}
-              </label>
-              <Input
-                id="major"
-                type="text"
-                placeholder="e.g., Computer Science, Psychology, Marketing..."
-                value={formData.major}
-                onChange={(e) => setFormData({ ...formData, major: e.target.value })}
-                required
-                className="bg-white border-border/50 focus:border-[#FF6B9D] transition-colors"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="skills" className="block text-sm font-medium mb-2 text-foreground">
-                {"What are you good at?"}
-              </label>
-              <Textarea
-                id="skills"
-                placeholder="Tell us about your skills, interests, or experiences..."
-                value={formData.skills}
-                onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                required
-                rows={4}
-                className="bg-white border-border/50 focus:border-[#FF6B9D] transition-colors resize-none"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="resume" className="block text-sm font-medium mb-2 text-foreground">
-                {"Resume (optional)"}
-              </label>
-              <div className="relative">
-                <input
-                  id="resume"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={(e) => setFormData({ ...formData, resume: e.target.files?.[0] || null })}
-                  className="sr-only"
-                />
-                <label
-                  htmlFor="resume"
-                  className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-border/50 rounded-xl hover:border-[#FF6B9D] transition-colors cursor-pointer bg-white/50"
-                >
-                  <span className="text-sm text-muted-foreground">
-                    {formData.resume ? formData.resume.name : "Click to upload or drag and drop"}
-                  </span>
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/50"
+          >
+            <div className="space-y-6">
+              <div>
+                <label htmlFor="major" className="block text-sm font-medium mb-2 text-foreground">
+                  {"What did you study?"}
                 </label>
+                <Input
+                  id="major"
+                  type="text"
+                  placeholder="e.g., Computer Science, Psychology, Marketing..."
+                  value={formData.major}
+                  onChange={(e) => setFormData({ ...formData, major: e.target.value })}
+                  required
+                  className="bg-white border-border/50 focus:border-[#FF6B9D] transition-colors"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="skills" className="block text-sm font-medium mb-2 text-foreground">
+                  {"What are you good at?"}
+                </label>
+                <Textarea
+                  id="skills"
+                  placeholder="Tell us about your skills, interests, or experiences..."
+                  value={formData.skills}
+                  onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                  required
+                  rows={4}
+                  className="bg-white border-border/50 focus:border-[#FF6B9D] transition-colors resize-none"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="resume" className="block text-sm font-medium mb-2 text-foreground">
+                  {"Resume (optional)"}
+                </label>
+                <div className="relative">
+                  <input
+                    id="resume"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => setFormData({ ...formData, resume: e.target.files?.[0] || null })}
+                    className="sr-only"
+                  />
+                  <label
+                    htmlFor="resume"
+                    className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-border/50 rounded-xl hover:border-[#FF6B9D] transition-colors cursor-pointer bg-white/50"
+                  >
+                    <span className="text-sm text-muted-foreground">
+                      {formData.resume ? formData.resume.name : "Click to upload or drag and drop"}
+                    </span>
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
 
-          <Button
-            type="submit"
-            className="w-full mt-8 bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl h-12 text-base font-medium shadow-md transition-all hover:shadow-lg"
-          >
-            {"Start Exploring"}
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              className="w-full mt-8 bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl h-12 text-base font-medium shadow-md transition-all hover:shadow-lg"
+            >
+              {"Start Exploring"}
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </form>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          {"This takes less than a minute · No account needed"}
-        </p>
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            {"This takes less than a minute · No account needed"}
+          </p>
+        </div>
+      </div>
+
+      {/* Career Explorer Page */}
+      <div
+        className={`absolute inset-0 min-h-screen transition-transform duration-700 ease-in-out ${
+          isExploring ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <CareerExplorer formData={formData} />
       </div>
     </div>
   )
@@ -153,6 +165,76 @@ const CAREER_DATABASE: Record<string, CareerNode[]> = {
       skillGaps: ["Figma proficiency", "User research methods"],
       suggestedActions: ["Build a design portfolio", "Take online UX courses", "Redesign existing apps"],
       nextMoves: ["Senior UX Designer", "Design Lead", "Product Designer"],
+    },
+    {
+      id: "data-scientist",
+      title: "Data Scientist",
+      industry: "Tech",
+      color: "from-[#C5E1A5] to-[#8BC34A]",
+      description: "Extract insights from data to drive business decisions and build predictive models.",
+      whyFits: [
+        "Strong analytical and statistical background",
+        "Technical skills in data analysis",
+      ],
+      skillGaps: ["Machine learning frameworks", "Big data tools"],
+      suggestedActions: ["Build ML projects", "Learn Python/R advanced techniques", "Contribute to open source"],
+      nextMoves: ["Senior Data Scientist", "Data Engineer", "ML Engineer"],
+    },
+    {
+      id: "software-engineer",
+      title: "Software Engineer",
+      industry: "Tech",
+      color: "from-[#FFE082] to-[#FFC107]",
+      description: "Build scalable applications and systems that power modern technology.",
+      whyFits: [
+        "Strong programming foundation",
+        "Problem-solving and logical thinking",
+      ],
+      skillGaps: ["System design", "Cloud platforms"],
+      suggestedActions: ["Build side projects", "Contribute to open source", "Learn system architecture"],
+      nextMoves: ["Senior Software Engineer", "Tech Lead", "Architect"],
+    },
+    {
+      id: "marketing-manager",
+      title: "Marketing Manager",
+      industry: "Marketing",
+      color: "from-[#F48FB1] to-[#E91E63]",
+      description: "Develop and execute marketing strategies to grow brand awareness and drive engagement.",
+      whyFits: [
+        "Understanding of consumer behavior",
+        "Creative and analytical thinking",
+      ],
+      skillGaps: ["Digital marketing tools", "Campaign analytics"],
+      suggestedActions: ["Get marketing certifications", "Run personal campaigns", "Learn SEO/SEM"],
+      nextMoves: ["Senior Marketing Manager", "Marketing Director", "CMO"],
+    },
+    {
+      id: "business-analyst",
+      title: "Business Analyst",
+      industry: "Business",
+      color: "from-[#A5D6A7] to-[#4CAF50]",
+      description: "Bridge the gap between business needs and technical solutions through analysis and strategy.",
+      whyFits: [
+        "Analytical mindset from your studies",
+        "Strong communication skills",
+      ],
+      skillGaps: ["Business process modeling", "Stakeholder management"],
+      suggestedActions: ["Get BA certification", "Learn SQL and analytics tools", "Practice case studies"],
+      nextMoves: ["Senior Business Analyst", "Product Manager", "Strategy Consultant"],
+    },
+    {
+      id: "consultant",
+      title: "Management Consultant",
+      industry: "Consulting",
+      color: "from-[#90CAF9] to-[#2196F3]",
+      description: "Help organizations solve complex problems and improve performance through strategic advice.",
+      whyFits: [
+        "Strong analytical and problem-solving skills",
+        "Ability to work with diverse teams",
+      ],
+      skillGaps: ["Case interview skills", "Industry knowledge"],
+      suggestedActions: ["Practice case interviews", "Build business acumen", "Network with consultants"],
+      nextMoves: ["Senior Consultant", "Principal", "Partner"],
     },
   ],
   "tech-pm": [
@@ -211,6 +293,54 @@ function CareerExplorer({ formData }: { formData: any }) {
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [selectedNode, setSelectedNode] = useState<CareerNode | null>(null)
   const [breadcrumb, setBreadcrumb] = useState<string[]>([])
+  const [generatedCareers, setGeneratedCareers] = useState<CareerNode[]>([])
+  const [isLoadingCareers, setIsLoadingCareers] = useState(true)
+  const [careerError, setCareerError] = useState<string | null>(null)
+
+  // Fetch careers from OpenAI API on mount
+  useEffect(() => {
+    const fetchCareers = async () => {
+      setIsLoadingCareers(true)
+      setCareerError(null)
+      try {
+        const response = await fetch("/api/generate-careers", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            major: formData.major,
+            skills: formData.skills,
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || "Failed to generate careers")
+        }
+
+        const data = await response.json()
+        if (data.careers && Array.isArray(data.careers)) {
+          setGeneratedCareers(data.careers)
+        } else {
+          throw new Error("Invalid response format")
+        }
+      } catch (error: any) {
+        console.error("Error fetching careers:", error)
+        setCareerError(error.message || "Failed to load career options")
+        // Fallback to hardcoded careers on error
+        const fallbackCareers = [
+          CAREER_DATABASE.root.find((n) => n.id === "tech-pm") || CAREER_DATABASE.root[0],
+          ...CAREER_DATABASE.root.slice(1, 3),
+        ]
+        setGeneratedCareers(fallbackCareers.filter(Boolean))
+      } finally {
+        setIsLoadingCareers(false)
+      }
+    }
+
+    fetchCareers()
+  }, [formData.major, formData.skills])
 
   const getCurrentNodeData = (): CareerNode | null => {
     if (!currentNodeId) return null
@@ -220,8 +350,10 @@ function CareerExplorer({ formData }: { formData: any }) {
 
   const getSecondaryNodes = (): CareerNode[] => {
     if (!currentNodeId) {
-      return CAREER_DATABASE.root
+      // Root level: return generated careers from API
+      return generatedCareers.length > 0 ? generatedCareers : []
     }
+    // For next levels, use hardcoded database
     return CAREER_DATABASE[currentNodeId] || []
   }
 
@@ -347,40 +479,91 @@ function CareerExplorer({ formData }: { formData: any }) {
               <div
                 className={`space-y-4 transition-all duration-500 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
               >
-                {secondaryNodes.slice(0, 2).map((node, idx) => (
-                  <button
-                    key={node.id}
-                    onClick={() => handleExploreNode(node)}
-                    className="group text-left w-full transition-all duration-500 hover:scale-105 active:scale-95"
-                  >
-                    <div
-                      className={`w-full rounded-2xl bg-gradient-to-br ${node.color} p-8 shadow-lg border border-white/20 transition-all duration-300 hover:shadow-2xl`}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="inline-block bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-white mb-3">
-                            {node.industry}
-                          </div>
-                          <h4 className="text-2xl font-bold text-white mb-2 text-balance">{node.title}</h4>
-                          <p className="text-white/90 text-sm leading-relaxed">{node.description}</p>
-                        </div>
+                {isLoadingCareers && !currentNodeId ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((idx) => (
+                      <div
+                        key={idx}
+                        className="w-full rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 p-8 shadow-lg border border-white/20 animate-pulse"
+                      >
+                        <div className="h-6 bg-white/30 rounded-full w-20 mb-3"></div>
+                        <div className="h-8 bg-white/40 rounded w-3/4 mb-2"></div>
+                        <div className="h-4 bg-white/30 rounded w-full mb-2"></div>
+                        <div className="h-4 bg-white/30 rounded w-5/6"></div>
                       </div>
-
-                      <div className="mt-6 flex items-center justify-between">
-                        <span className="text-sm font-medium text-white/80">{"Click to learn more →"}</span>
-                        <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-2 transition-transform duration-300" />
-                      </div>
+                    ))}
+                    <div className="text-center py-4">
+                      <p className="text-sm text-muted-foreground animate-pulse">
+                        {"Generating personalized career options..."}
+                      </p>
                     </div>
-                  </button>
-                ))}
-
-                {secondaryNodes.length === 0 && (
+                  </div>
+                ) : careerError && !currentNodeId ? (
                   <div className="text-center py-12">
-                    <p className="text-muted-foreground mb-4">{"No more paths to explore from here."}</p>
-                    <Button onClick={handleGoBack} className="bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl">
-                      {"Go back"}
+                    <p className="text-muted-foreground mb-4">{careerError}</p>
+                    <Button
+                      onClick={() => {
+                        setCareerError(null)
+                        setIsLoadingCareers(true)
+                        fetch("/api/generate-careers", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            major: formData.major,
+                            skills: formData.skills,
+                          }),
+                        })
+                          .then((res) => res.json())
+                          .then((data) => {
+                            if (data.careers) setGeneratedCareers(data.careers)
+                            else setCareerError("Invalid response")
+                          })
+                          .catch((err) => setCareerError(err.message))
+                          .finally(() => setIsLoadingCareers(false))
+                      }}
+                      className="bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl"
+                    >
+                      {"Try again"}
                     </Button>
                   </div>
+                ) : (
+                  <>
+                    {secondaryNodes.slice(0, 3).map((node, idx) => (
+                      <button
+                        key={node.id}
+                        onClick={() => handleExploreNode(node)}
+                        className="group text-left w-full transition-all duration-500 hover:scale-105 active:scale-95"
+                      >
+                        <div
+                          className={`w-full rounded-2xl bg-gradient-to-br ${node.color} p-8 shadow-lg border border-white/20 transition-all duration-300 hover:shadow-2xl`}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="inline-block bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-white mb-3">
+                                {node.industry}
+                              </div>
+                              <h4 className="text-2xl font-bold text-white mb-2 text-balance">{node.title}</h4>
+                              <p className="text-white/90 text-sm leading-relaxed">{node.description}</p>
+                            </div>
+                          </div>
+
+                          <div className="mt-6 flex items-center justify-between">
+                            <span className="text-sm font-medium text-white/80">{"Click to learn more →"}</span>
+                            <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-2 transition-transform duration-300" />
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+
+                    {secondaryNodes.length === 0 && (
+                      <div className="text-center py-12">
+                        <p className="text-muted-foreground mb-4">{"No more paths to explore from here."}</p>
+                        <Button onClick={handleGoBack} className="bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl">
+                          {"Go back"}
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
