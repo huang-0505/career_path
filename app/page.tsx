@@ -486,35 +486,42 @@ function CareerExplorer({ formData }: { formData: any }) {
   const maxSteps = 4 // Allow at least 4 steps
   const showEndScreen = step >= maxSteps && currentNodeId !== null
 
-  // Build the full path tree for end screen
+  // Build the full path tree for end screen - show all choices made
   const buildPathTree = (): CareerNode[] => {
     const path: CareerNode[] = []
-    const seenIds = new Set<string>()
     
-    if (breadcrumb.length === 0) return path
+    if (breadcrumb.length === 0) {
+      // If no breadcrumb but we have currentNode, show it
+      if (currentNode) path.push(currentNode)
+      return path
+    }
     
     // Get root level careers - first choice
     const rootCareers = generatedCareers.root || []
     const firstCareer = rootCareers.find((c) => c.id === breadcrumb[0])
-    if (firstCareer && !seenIds.has(firstCareer.id)) {
+    if (firstCareer) {
       path.push(firstCareer)
-      seenIds.add(firstCareer.id)
     }
     
     // Get careers from each subsequent level
+    // breadcrumb[i] is the parent, breadcrumb[i+1] is the child chosen from that parent
     for (let i = 0; i < breadcrumb.length - 1; i++) {
-      const nodeId = breadcrumb[i]
-      const levelCareers = generatedCareers[nodeId] || []
-      const nextCareer = levelCareers.find((c) => c.id === breadcrumb[i + 1])
-      if (nextCareer && !seenIds.has(nextCareer.id)) {
-        path.push(nextCareer)
-        seenIds.add(nextCareer.id)
+      const parentId = breadcrumb[i]
+      const childId = breadcrumb[i + 1]
+      const levelCareers = generatedCareers[parentId] || []
+      const chosenCareer = levelCareers.find((c) => c.id === childId)
+      if (chosenCareer) {
+        path.push(chosenCareer)
       }
     }
     
-    // Add the current node (final destination) only if it's different
-    if (currentNode && !seenIds.has(currentNode.id)) {
-      path.push(currentNode)
+    // Add the current node (final destination) - this is the last choice made
+    if (currentNode) {
+      // Only add if it's different from the last item in path
+      const lastPathItem = path[path.length - 1]
+      if (!lastPathItem || lastPathItem.id !== currentNode.id) {
+        path.push(currentNode)
+      }
     }
     
     return path
@@ -604,24 +611,6 @@ function CareerExplorer({ formData }: { formData: any }) {
                       </div>
                     ))}
                   </div>
-                </div>
-
-                <div className="text-center space-y-4">
-                  <p className="text-muted-foreground">
-                    {"Click any career card above to view full details, or start a new exploration"}
-                  </p>
-                  <Button
-                    onClick={() => {
-                      setBreadcrumb([])
-                      setCurrentNodeId(null)
-                      setCurrentNode(null)
-                      setIsContentReady(true)
-                      setGeneratedCareers({})
-                    }}
-                    className="bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl px-8 py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all"
-                  >
-                    {"Start New Exploration"}
-                  </Button>
                 </div>
               </div>
             ) : (
