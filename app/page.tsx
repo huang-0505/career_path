@@ -785,19 +785,18 @@ function CareerExplorer({ formData }: { formData: any }) {
                     )}
                   </div>
                 ) : null}
-              </div>
             </div>
 
-            <div className="mt-6 text-center">
-              <p className="text-muted-foreground text-xs">
+              <div className="mt-6 text-center">
+                <p className="text-muted-foreground text-xs">
                 {secondaryNodes.length > 0
-                  ? "Click cards to view details or explore paths"
-                  : currentNodeId
-                  ? "Click the card above to view full details"
-                  : "Explore careers that match your profile"}
-              </p>
+                    ? "Click cards to view details or explore paths"
+                    : currentNodeId
+                    ? "Click the card above to view full details"
+                    : "Explore careers that match your profile"}
+                </p>
+              </div>
             </div>
-          </div>
             )}
           </div>
         </div>
