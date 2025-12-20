@@ -37,7 +37,7 @@ Requirements:
    - PROMOTION: Moving up to a higher position (e.g., Senior ${parentCareer.title}, Lead ${parentCareer.title}, Manager, Director)
    - LATERAL MOVE: Switching to a better company or different position requiring similar skills (e.g., ${parentCareer.title} at a top tech company, or related role in a different industry)
    - ENTRY-LEVEL ALTERNATIVE: An entry-level position in a related field that uses similar skills but offers a different path (e.g., Junior roles in adjacent fields)
-3. Mix these types: Include at least one promotion, one lateral move, and one entry-level alternative
+3. Mix these types: Include at least one promotion and one lateral move, the third career could be anthing of your choice.
 4. All options should be realistic and use similar skills from the current role
 5. Each career must include all the following fields in this exact format:
 `

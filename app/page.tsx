@@ -489,24 +489,33 @@ function CareerExplorer({ formData }: { formData: any }) {
   // Build the full path tree for end screen
   const buildPathTree = (): CareerNode[] => {
     const path: CareerNode[] = []
+    const seenIds = new Set<string>()
     
     if (breadcrumb.length === 0) return path
     
     // Get root level careers - first choice
     const rootCareers = generatedCareers.root || []
     const firstCareer = rootCareers.find((c) => c.id === breadcrumb[0])
-    if (firstCareer) path.push(firstCareer)
+    if (firstCareer && !seenIds.has(firstCareer.id)) {
+      path.push(firstCareer)
+      seenIds.add(firstCareer.id)
+    }
     
     // Get careers from each subsequent level
     for (let i = 0; i < breadcrumb.length - 1; i++) {
       const nodeId = breadcrumb[i]
       const levelCareers = generatedCareers[nodeId] || []
       const nextCareer = levelCareers.find((c) => c.id === breadcrumb[i + 1])
-      if (nextCareer) path.push(nextCareer)
+      if (nextCareer && !seenIds.has(nextCareer.id)) {
+        path.push(nextCareer)
+        seenIds.add(nextCareer.id)
+      }
     }
     
-    // Add the current node (final destination)
-    if (currentNode) path.push(currentNode)
+    // Add the current node (final destination) only if it's different
+    if (currentNode && !seenIds.has(currentNode.id)) {
+      path.push(currentNode)
+    }
     
     return path
   }
@@ -542,9 +551,9 @@ function CareerExplorer({ formData }: { formData: any }) {
         <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
           <div className="w-full max-w-7xl">
             {showEndScreen ? (
-              // End Screen - Show Full Path Tree
-              <div className="w-full max-w-5xl mx-auto">
-                <div className="text-center mb-8">
+              // End Screen - Show Full Path Tree as Vertical Flowchart
+              <div className="w-full max-w-4xl mx-auto">
+                <div className="text-center mb-10">
                   <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-6 py-3 rounded-full mb-4 shadow-sm">
                     <Sparkles className="w-5 h-5 text-[#FF6B9D]" />
                     <span className="text-lg font-semibold text-foreground">Your Career Exploration Journey</span>
@@ -555,28 +564,43 @@ function CareerExplorer({ formData }: { formData: any }) {
                   </p>
                 </div>
 
+                {/* Vertical Flowchart */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/50 mb-6">
-                  <h2 className="text-xl font-bold mb-6 text-foreground">{"Your Career Path"}</h2>
-                  <div className="space-y-4">
+                  <h2 className="text-xl font-bold mb-8 text-center text-foreground">{"Your Career Path"}</h2>
+                  <div className="flex flex-col items-center space-y-0">
                     {pathTree.map((career, idx) => (
-                      <div key={idx} className="flex items-start gap-4">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#FF6B9D] to-[#FF5689] flex items-center justify-center text-white font-bold text-sm shadow-md">
-                          {idx + 1}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-bold text-foreground">{career.title}</h3>
-                            <span className="px-3 py-1 bg-muted rounded-full text-xs font-medium text-muted-foreground">
-                              {career.industry}
-                            </span>
-                          </div>
-                          <p className="text-sm text-muted-foreground leading-relaxed">{career.description}</p>
-                          {idx < pathTree.length - 1 && (
-                            <div className="flex items-center justify-center my-4">
-                              <ArrowRight className="w-5 h-5 text-[#FF6B9D]" />
+                      <div key={idx} className="flex flex-col items-center w-full">
+                        {/* Career Card */}
+                        <div className={`w-full max-w-md rounded-2xl bg-gradient-to-br ${career.color} p-6 shadow-xl border border-white/20 transition-all hover:shadow-2xl cursor-pointer`}
+                          onClick={() => {
+                            setSelectedNode(career)
+                            setDetailsOpen(true)
+                          }}
+                        >
+                          <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center text-white font-bold text-lg shadow-md">
+                              {idx + 1}
                             </div>
-                          )}
+                            <div className="flex-1">
+                              <div className="inline-block bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-white mb-2">
+                                {career.industry}
+                              </div>
+                              <h3 className="text-2xl font-bold text-white mb-2 text-balance">{career.title}</h3>
+                              <p className="text-white/90 text-sm leading-relaxed">{career.description}</p>
+                            </div>
+                          </div>
                         </div>
+                        
+                        {/* Connector Arrow (except for last item) */}
+                        {idx < pathTree.length - 1 && (
+                          <div className="flex flex-col items-center my-4">
+                            <div className="w-0.5 h-8 bg-gradient-to-b from-[#FF6B9D]/40 to-[#FF6B9D]/20"></div>
+                            <div className="w-8 h-8 rounded-full bg-white/80 border-2 border-[#FF6B9D]/30 flex items-center justify-center shadow-sm">
+                              <ArrowRight className="w-5 h-5 text-[#FF6B9D] rotate-90" />
+                            </div>
+                            <div className="w-0.5 h-8 bg-gradient-to-b from-[#FF6B9D]/20 to-[#FF6B9D]/40"></div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -584,7 +608,7 @@ function CareerExplorer({ formData }: { formData: any }) {
 
                 <div className="text-center space-y-4">
                   <p className="text-muted-foreground">
-                    {"Want to explore a different path? Go back and try other options!"}
+                    {"Click any career card above to view full details, or start a new exploration"}
                   </p>
                   <Button
                     onClick={() => {
@@ -592,8 +616,9 @@ function CareerExplorer({ formData }: { formData: any }) {
                       setCurrentNodeId(null)
                       setCurrentNode(null)
                       setIsContentReady(true)
+                      setGeneratedCareers({})
                     }}
-                    className="bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl px-8 py-3 text-base font-semibold"
+                    className="bg-[#FF6B9D] hover:bg-[#FF5689] text-white rounded-xl px-8 py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all"
                   >
                     {"Start New Exploration"}
                   </Button>
