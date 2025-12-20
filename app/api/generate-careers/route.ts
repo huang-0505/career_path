@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
 export async function POST(request: NextRequest) {
   try {
     const { major, skills } = await request.json()
@@ -15,6 +11,11 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Initialize OpenAI client inside the function to avoid build-time errors
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
 
     const prompt = `You are a career counselor helping a recent graduate explore career paths. Based on their background, generate exactly 3 career options in JSON format.
 
