@@ -2,19 +2,37 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import { useSession, signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowRight, Sparkles, ChevronLeft } from "lucide-react"
 
 export default function OnboardingPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [formData, setFormData] = useState({
     major: "",
     skills: "",
     resume: null as File | null,
   })
   const [isExploring, setIsExploring] = useState(false)
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin")
+    }
+  }, [status, router])
+
+  if (status === "loading" || status === "unauthenticated") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#FFF5F7] via-[#FFF9E6] to-[#F0F9FF] flex items-center justify-center">
+        <Sparkles className="w-8 h-8 text-[#FF6B9D] animate-pulse" />
+      </div>
+    )
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,6 +63,21 @@ export default function OnboardingPage() {
           onSubmit={handleSubmit}
           className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/50"
         >
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              {session?.user?.image && (
+                <img src={session.user.image} alt="" className="w-7 h-7 rounded-full" />
+              )}
+              <span className="text-sm text-muted-foreground">Hi, {session?.user?.name?.split(" ")[0]}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Sign out
+            </button>
+          </div>
           <div className="space-y-6">
             <div>
               <label htmlFor="major" className="block text-sm font-medium mb-2 text-foreground">
@@ -110,7 +143,7 @@ export default function OnboardingPage() {
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          {"This takes less than a minute · No account needed"}
+          {"This takes less than a minute"}
         </p>
         </div>
       </div>
@@ -121,7 +154,7 @@ export default function OnboardingPage() {
           isExploring ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <CareerExplorer formData={formData} />
+        <CareerExplorer formData={formData} session={session} />
       </div>
     </div>
   )
@@ -287,7 +320,7 @@ const CAREER_DATABASE: Record<string, CareerNode[]> = {
   ],
 }
 
-function CareerExplorer({ formData }: { formData: any }) {
+function CareerExplorer({ formData, session }: { formData: any; session: any }) {
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null)
   const [currentNode, setCurrentNode] = useState<CareerNode | null>(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
@@ -535,7 +568,18 @@ function CareerExplorer({ formData }: { formData: any }) {
   }
 
   const pathTree = buildPathTree()
-  
+
+  const hasSavedExploration = useRef(false)
+  useEffect(() => {
+    if (!showEndScreen || hasSavedExploration.current || pathTree.length === 0) return
+    hasSavedExploration.current = true
+    fetch("/api/explorations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pathData: pathTree }),
+    }).catch(console.error)
+  })
+
   // Debug: Log path tree to help diagnose issues
   if (showEndScreen) {
     console.log('End Screen Debug:', {
@@ -572,6 +616,16 @@ function CareerExplorer({ formData }: { formData: any }) {
               <span className="font-semibold text-foreground">{step}</span>
               <span>{`of ${maxSteps}`}</span>
             </div>
+            <div className="w-px h-4 bg-border" />
+            {session?.user?.image && (
+              <img src={session.user.image} alt="" className="w-7 h-7 rounded-full" />
+            )}
+            <button
+              onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Sign out
+            </button>
           </div>
         </header>
 

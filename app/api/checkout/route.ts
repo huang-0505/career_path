@@ -3,12 +3,19 @@ import { auth } from "@/app/api/auth/[...nextauth]/route"
 import Stripe from "stripe"
 import { prisma } from "@/lib/prisma"
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia",
-})
-
 export async function POST(request: NextRequest) {
   try {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: "Stripe secret key not configured" },
+        { status: 500 }
+      )
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-12-15.clover",
+    })
+
     const session = await auth()
     
     if (!session?.user?.id) {
@@ -50,8 +57,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: "payment",
-      success_url: `${process.env.NEXTAUTH_URL}/explore?payment=success`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/explore?payment=cancelled`,
+      success_url: `${process.env.NEXTAUTH_URL}/?payment=success`,
+      cancel_url: `${process.env.NEXTAUTH_URL}/`,
       client_reference_id: session.user.id,
       metadata: {
         userId: session.user.id,
