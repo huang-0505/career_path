@@ -3,7 +3,7 @@ import OpenAI from "openai"
 
 export async function POST(request: NextRequest) {
   try {
-    const { major, skills, parentCareer } = await request.json()
+    const { major, skills, parentCareer, hasResume } = await request.json()
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -12,16 +12,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Initialize OpenAI client inside the function to avoid build-time errors
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     })
 
+    const resumeNote = hasResume
+      ? `\nNote: The user has uploaded a resume — tailor recommendations for someone with documented, real-world experience.`
+      : ""
+
     let prompt = ""
-    
+
     if (parentCareer) {
-      // Generate next-level careers based on parent career
-      prompt = `You are a career counselor helping someone explore career progression paths. Based on their current career, generate exactly 3 next-step career options in JSON format.
+      prompt = `You are an expert career strategist helping someone explore what comes next after "${parentCareer.title}".
 
 Current Career: ${parentCareer.title}
 Industry: ${parentCareer.industry}
@@ -29,86 +31,84 @@ Description: ${parentCareer.description}
 
 User's Original Background:
 - Major: ${major || "Not specified"}
-- Skills: ${skills || "Not specified"}
+- Skills: ${skills || "Not specified"}${resumeNote}
 
-Requirements:
-1. Generate 3 career options that are natural next steps or transitions from "${parentCareer.title}"
-2. Career progression types to include:
-   - PROMOTION: Moving up to a higher position (e.g., Senior ${parentCareer.title}, Lead ${parentCareer.title}, Manager, Director)
-   - LATERAL MOVE: Switching to a better company or different position requiring similar skills (e.g., ${parentCareer.title} at a top tech company, or related role in a different industry)
-   - ENTRY-LEVEL ALTERNATIVE: An entry-level position in a related field that uses similar skills but offers a different path (e.g., Junior roles in adjacent fields)
-3. Mix these types: Include at least one promotion and one lateral move, the third career could be anthing of your choice.
-4. All options should be realistic and use similar skills from the current role
-5. Each career must include all the following fields in this exact format:
-`
+Generate exactly 3 career options that are compelling next steps from "${parentCareer.title}". Use these three archetypes — one per career:
+
+1. PROMOTION — A direct upward move within the same track (e.g., Senior ${parentCareer.title}, Lead, Manager, Director). Clearly name the higher title and explain what changes.
+2. STRATEGIC PIVOT — A lateral or cross-industry move that uses the same core skills in a new context. This should feel exciting and attainable, not random.
+3. ENTREPRENEURIAL/INDEPENDENT — Starting a practice, going fractional, launching a startup, or building a product in this space. Make it concrete, not vague.
+
+For every career:
+- Reference specific skills from the user's background by name in whyFits
+- List skills that are genuinely missing (not skills they already listed) in skillGaps
+- Make suggestedActions specific with named resources (e.g., "Complete the PM Certification by Product School", not "Take a course")
+- salaryRange: realistic US estimate for this role level in 2024
+- marketDemand: one of "Growing", "Stable", or "Declining" — base it on real job market trends
+- timeToTransition: realistic estimate from "${parentCareer.title}" to this role`
     } else {
-      // Root level - initial career exploration
-      prompt = `You are a career counselor helping a recent graduate explore career paths. Based on their background, generate exactly 3 career options in JSON format.
-    I want you to generate 3 careers that are related to the user's major and skills.
-    with one career that is related to the user's major and skills.
-    with two careers that are related to the user's skills, and would be a bit different from the traditional careers.
-    The whole point is to help the user to explore the career options that are not traditional, but still related to the user's major and skills.
+      prompt = `You are an expert career strategist helping a recent graduate explore career paths for the first time.
 
-User's Major: ${major || "Not specified"}
-User's Skills: ${skills || "Not specified"}
+User's Background:
+- Major: ${major || "Not specified"}
+- Skills: ${skills || "Not specified"}${resumeNote}
 
-Requirements:
-1. Second career should be the standard option, which is the most popular career related to the user's major and skills.
-2. First career and third careers should be customized based on the user's major and skills, but would be a bit different from the traditional careers.
-3. Each career must include all the following fields in this exact format:
-`
+Generate exactly 3 career options using these three archetypes — one per career:
+
+1. THE LOGICAL STEP — The most common, well-established career for someone with this exact major and skills. Explain why it's the default path and what makes it a strong choice.
+2. THE ADJACENT PIVOT — A career that uses the user's skills in a surprising industry or role context. Should feel like a smart lateral move, not a stretch.
+3. THE WILD CARD — A less obvious but validated career path that the user probably hasn't considered. Make it interesting and real — not fantasy.
+
+For every career:
+- In whyFits, directly reference the user's stated major and skills by name (e.g., "Your ${major} background means you already understand X")
+- In skillGaps, list only skills they don't have yet — not ones they've already listed
+- In suggestedActions, provide 3 specific, named next steps with real resources (courses, certifications, communities — name them)
+- salaryRange: realistic US entry-level salary estimate for 2024
+- marketDemand: one of "Growing", "Stable", or "Declining"
+- timeToTransition: how long to land this first role from today (e.g., "3–6 months with focused prep")`
     }
 
     prompt += `
+
+Return a JSON object with this exact structure:
 {
   "careers": [
     {
-      "id": "unique-id",
-      "title": "Career Title",
+      "id": "unique-kebab-case-id",
+      "title": "Job Title",
       "industry": "Industry Name",
       "color": "from-[#HEX] to-[#HEX]",
-      "description": "Brief 1-2 sentence description",
-      "whyFits": ["Reason 1", "Reason 2"],
-      "skillGaps": ["Skill gap 1", "Skill gap 2"],
-      "suggestedActions": ["Action 1", "Action 2", "Action 3"],
-      "nextMoves": ["Next role 1", "Next role 2", "Next role 3"]
+      "description": "2–3 sentence description of what this role does day-to-day",
+      "whyFits": ["Specific reason that references the user's background", "Another specific reason"],
+      "skillGaps": ["Skill they need but don't have yet", "Another gap"],
+      "suggestedActions": ["Named, specific action 1", "Named, specific action 2", "Named, specific action 3"],
+      "nextMoves": ["Realistic future role 1", "Realistic future role 2"],
+      "salaryRange": "$X–$Y",
+      "marketDemand": "Growing",
+      "timeToTransition": "3–6 months"
     }
   ]
 }
 
-{
-  "careers": [
-    {
-      "id": "unique-id",
-      "title": "Career Title",
-      "industry": "Industry Name",
-      "color": "from-[#HEX] to-[#HEX]",
-      "description": "Brief 1-2 sentence description",
-      "whyFits": ["Reason 1", "Reason 2"],
-      "skillGaps": ["Skill gap 1", "Skill gap 2"],
-      "suggestedActions": ["Action 1", "Action 2", "Action 3"],
-      "nextMoves": ["Next role 1", "Next role 2", "Next role 3"]
-    }
-  ]
-}
+Color guidelines by industry:
+- Tech/Engineering: pink/rose (from-[#FFB5D5] to-[#FF6B9D])
+- Design/Creative: blue/cyan (from-[#B5E7FF] to-[#4FC3F7])
+- Business/Strategy: green (from-[#A5D6A7] to-[#4CAF50])
+- Marketing/Growth: pink/red (from-[#F48FB1] to-[#E91E63])
+- Consulting/Advisory: blue (from-[#90CAF9] to-[#2196F3])
+- Data/Analytics: yellow/amber (from-[#FFE082] to-[#FFC107])
+- Finance/Investing: teal (from-[#80CBC4] to-[#009688])
+- Healthcare/Bio: purple (from-[#CE93D8] to-[#9C27B0])
 
-For colors, use gradient colors that match the industry:
-- Tech: pink/rose gradients (from-[#FFB5D5] to-[#FF6B9D])
-- Design: blue/cyan gradients (from-[#B5E7FF] to-[#4FC3F7])
-- Business: green gradients (from-[#A5D6A7] to-[#4CAF50])
-- Marketing: pink/red gradients (from-[#F48FB1] to-[#E91E63])
-- Consulting: blue gradients (from-[#90CAF9] to-[#2196F3])
-- Data: yellow/green gradients (from-[#FFE082] to-[#FFC107])
-
-Return ONLY valid JSON, no markdown, no code blocks, just the JSON object.`
+Return ONLY valid JSON. No markdown, no code blocks, just the JSON object.`
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
           content:
-            "You are a helpful career counselor. Always return valid JSON only, no markdown formatting.",
+            "You are an expert career strategist with 20 years of experience across tech, finance, consulting, and creative industries. You give brutally honest, specific, data-informed career advice. You always tie recommendations directly to the user's stated background — never give generic advice. Return valid JSON only.",
         },
         {
           role: "user",
@@ -134,4 +134,3 @@ Return ONLY valid JSON, no markdown, no code blocks, just the JSON object.`
     )
   }
 }
-

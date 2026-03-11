@@ -170,6 +170,9 @@ type CareerNode = {
   skillGaps: string[]
   suggestedActions: string[]
   nextMoves: string[]
+  salaryRange?: string
+  marketDemand?: string
+  timeToTransition?: string
 }
 
 const CAREER_DATABASE: Record<string, CareerNode[]> = {
@@ -346,6 +349,7 @@ function CareerExplorer({ formData, session }: { formData: any; session: any }) 
           body: JSON.stringify({
             major: formData.major,
             skills: formData.skills,
+            hasResume: !!formData.resume,
           }),
         })
 
@@ -416,6 +420,7 @@ function CareerExplorer({ formData, session }: { formData: any; session: any }) 
           major: formData.major,
           skills: formData.skills,
           parentCareer: parentNode,
+          hasResume: !!formData.resume,
         }),
       })
 
@@ -920,6 +925,39 @@ function CareerExplorer({ formData, session }: { formData: any; session: any }) 
                   </h3>
                   <p className="text-foreground text-lg leading-relaxed">{selectedNode.description}</p>
                 </section>
+
+                {(selectedNode.salaryRange || selectedNode.marketDemand || selectedNode.timeToTransition) && (
+                  <section>
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                      {"At a Glance"}
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {selectedNode.salaryRange && (
+                        <span className="px-4 py-2 bg-[#C5E1A5]/30 rounded-xl text-sm font-medium text-foreground border border-[#C5E1A5]">
+                          {selectedNode.salaryRange}
+                        </span>
+                      )}
+                      {selectedNode.marketDemand && (
+                        <span
+                          className={`px-4 py-2 rounded-xl text-sm font-medium border ${
+                            selectedNode.marketDemand === "Growing"
+                              ? "bg-green-100 border-green-300 text-green-800"
+                              : selectedNode.marketDemand === "Declining"
+                              ? "bg-red-100 border-red-300 text-red-700"
+                              : "bg-muted border-border text-foreground"
+                          }`}
+                        >
+                          {selectedNode.marketDemand === "Growing" ? "Growing demand" : selectedNode.marketDemand === "Declining" ? "Declining demand" : "Stable demand"}
+                        </span>
+                      )}
+                      {selectedNode.timeToTransition && (
+                        <span className="px-4 py-2 bg-[#B5E7FF]/30 rounded-xl text-sm font-medium text-foreground border border-[#B5E7FF]">
+                          {selectedNode.timeToTransition} to transition
+                        </span>
+                      )}
+                    </div>
+                  </section>
+                )}
 
                 <section>
                   <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
