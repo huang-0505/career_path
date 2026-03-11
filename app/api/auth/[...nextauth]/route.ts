@@ -3,9 +3,13 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import Google from "next-auth/providers/google"
 
+const authBaseUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+  // Force a fixed redirect_uri for OAuth (fixes Vercel preview deployment URL mismatch)
+  ...(authBaseUrl && { redirectProxyUrl: `${authBaseUrl.replace(/\/$/, "")}/api/auth` }),
   adapter: PrismaAdapter(prisma),
   providers: [
     Google({
