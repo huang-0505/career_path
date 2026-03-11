@@ -2,7 +2,7 @@
 
 ## ✅ What's Done
 - Database schema created
-- Authentication system (sign up/sign in)
+- Authentication system (Google sign-in)
 - Payment system (Stripe $1 checkout)
 - API routes for saving explorations
 
@@ -27,9 +27,9 @@
 
 ## 🚀 Testing Flow
 
-1. **Test Sign Up**
-   - Go to `/auth/signup`
-   - Create an account
+1. **Test Google Sign-In**
+   - Go to `/auth/signin`
+   - Click "Continue with Google"
    - Should redirect to main page
 
 2. **Test Payment**
@@ -56,6 +56,8 @@ Make sure these are in both `.env` and `.env.local`:
 DATABASE_URL=...
 NEXTAUTH_SECRET=...
 NEXTAUTH_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
 STRIPE_SECRET_KEY=...
 STRIPE_WEBHOOK_SECRET=...
 OPENAI_API_KEY=...

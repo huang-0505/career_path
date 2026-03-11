@@ -8,12 +8,11 @@
 - Payment model to track $1 payments
 
 ✅ **Authentication** (NextAuth.js)
-- Sign up page (`/auth/signup`)
+- Google sign-in page (`/auth/signin`)
 - Sign in page (`/auth/signin`)
-- Password hashing with bcryptjs
+- Google OAuth with NextAuth.js
 
 ✅ **API Routes**
-- `/api/auth/signup` - User registration
 - `/api/auth/[...nextauth]` - NextAuth authentication
 - `/api/explorations` - Save/load career explorations
 - `/api/checkout` - Create Stripe checkout session
@@ -37,12 +36,14 @@ pnpm install
 Add to `.env.local`:
 
 ```env
-# Database (from Neon)
-DATABASE_URL=postgresql://neondb_owner:npg_3afhQ1TByjAg@ep-patient-credit-ahi9nqun-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require
+# Database
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 
 # NextAuth
 NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
 NEXTAUTH_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
 
 # Stripe (get from Stripe Dashboard)
 STRIPE_SECRET_KEY=sk_test_...
@@ -98,8 +99,7 @@ pnpm dev
 ```
 
 2. Visit:
-   - Sign up: http://localhost:3000/auth/signup
-   - Sign in: http://localhost:3000/auth/signin
+   - Sign in with Google: http://localhost:3000/auth/signin
    - Main app: http://localhost:3000
 
 ## Database Schema
@@ -110,7 +110,7 @@ pnpm dev
 
 ## Payment Flow
 
-1. User signs up/logs in
+1. User signs in with Google
 2. User clicks "Start Exploring"
 3. Check if user has paid (`/api/payment/check`)
 4. If not paid, redirect to Stripe checkout (`/api/checkout`)

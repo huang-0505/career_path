@@ -805,18 +805,30 @@ function CareerExplorer({ formData, session }: { formData: any; session: any }) 
                       onClick={() => {
                         setCareerError(null)
                         setIsLoadingCareers(true)
+                        setIsContentReady(false)
                         fetch("/api/generate-careers", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({
                             major: formData.major,
                             skills: formData.skills,
+                            hasResume: !!formData.resume,
                           }),
                         })
-                          .then((res) => res.json())
+                          .then(async (res) => {
+                            const data = await res.json()
+                            if (!res.ok) {
+                              throw new Error(data.error || "Failed to generate careers")
+                            }
+                            return data
+                          })
                           .then((data) => {
-                            if (data.careers) setGeneratedCareers(data.careers)
-                            else setCareerError("Invalid response")
+                            if (data.careers && Array.isArray(data.careers)) {
+                              setGeneratedCareers({ root: data.careers })
+                              setIsContentReady(true)
+                            } else {
+                              setCareerError("Invalid response")
+                            }
                           })
                           .catch((err) => setCareerError(err.message))
                           .finally(() => setIsLoadingCareers(false))
