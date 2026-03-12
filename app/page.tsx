@@ -176,6 +176,26 @@ type CareerNode = {
   timeToTransition?: string
 }
 
+const INDUSTRY_COLOR_MAP: Array<{ match: string[]; color: string }> = [
+  { match: ["data", "analytics", "bi", "business intelligence"], color: "from-[#F59E0B] to-[#D97706]" },
+  { match: ["tech", "engineering", "software", "developer"], color: "from-[#EC4899] to-[#DB2777]" },
+  { match: ["design", "creative", "ux", "ui"], color: "from-[#38BDF8] to-[#0284C7]" },
+  { match: ["business", "strategy", "operations", "product"], color: "from-[#22C55E] to-[#15803D]" },
+  { match: ["marketing", "growth", "content", "brand"], color: "from-[#F43F5E] to-[#E11D48]" },
+  { match: ["consulting", "advisory"], color: "from-[#3B82F6] to-[#1D4ED8]" },
+  { match: ["finance", "investing", "risk", "accounting"], color: "from-[#14B8A6] to-[#0F766E]" },
+  { match: ["healthcare", "health", "bio", "clinical"], color: "from-[#A855F7] to-[#7E22CE]" },
+]
+
+function getCareerCardColor(node: CareerNode) {
+  const industry = node.industry.toLowerCase()
+  const matchedPalette = INDUSTRY_COLOR_MAP.find(({ match }) =>
+    match.some((term) => industry.includes(term))
+  )
+
+  return matchedPalette?.color || node.color || "from-[#EC4899] to-[#DB2777]"
+}
+
 const CAREER_DATABASE: Record<string, CareerNode[]> = {
   root: [
     {
@@ -857,7 +877,7 @@ function CareerExplorer({ formData, session }: { formData: any; session: any }) 
                             setSelectedNode(node)
                             setDetailsOpen(true)
                           }}
-                          className={`w-full h-full rounded-xl bg-gradient-to-br ${node.color} p-5 shadow-lg border border-white/20 transition-all duration-300 hover:shadow-xl cursor-pointer flex flex-col justify-between`}
+                          className={`w-full h-full rounded-xl bg-gradient-to-br ${getCareerCardColor(node)} p-5 shadow-lg border border-white/20 transition-all duration-300 hover:shadow-xl cursor-pointer flex flex-col justify-between`}
                         >
                         <div className="flex-1">
                             <div className="inline-block bg-white/30 backdrop-blur-sm px-2 py-0.5 rounded-full text-xs font-medium text-white mb-2">
