@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
+import { readFile } from "fs/promises"
+import { join } from "path"
+
+async function getSkillContext(): Promise<string> {
+  try {
+    const path = join(process.cwd(), "skill.md")
+    const content = await readFile(path, "utf-8")
+    return `\n\n## Skill Knowledge Reference (use this to map user's major/skills to careers)\n\n${content}`
+  } catch {
+    return ""
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,6 +31,8 @@ export async function POST(request: NextRequest) {
     const resumeNote = hasResume
       ? `\nNote: The user has uploaded a resume — tailor recommendations for someone with documented, real-world experience.`
       : ""
+
+    const skillContext = await getSkillContext()
 
     let prompt = ""
 
@@ -53,14 +67,19 @@ User's Background:
 - Major: ${major || "Not specified"}
 - Skills: ${skills || "Not specified"}${resumeNote}
 
-Generate exactly 3 career options using these three archetypes — one per career:
+CRITICAL: Every career you recommend MUST have a strong, direct connection to the user's major and skills. Use the Skill Knowledge Reference below to map their inputs to careers — recognize skill synonyms (e.g., "math" = quantitative/statistics) and follow the Major → Skill Clusters and Career → Core Skills tables. At least 2 of the user's stated skills (or inferred from their major) should be core to the role. Avoid careers that would require learning an entirely different discipline.
 
-1. THE LOGICAL STEP — The most common, well-established career for someone with this exact major and skills. Explain why it's the default path and what makes it a strong choice.
-2. THE ADJACENT PIVOT — A career that uses the user's skills in a surprising industry or role context. Should feel like a smart lateral move, not a stretch.
-3. THE WILD CARD — A less obvious but validated career path that the user probably hasn't considered. Make it interesting and real — not fantasy.
+Generate exactly 4 career options using these four archetypes — one per career:
+
+1. TRADITIONAL PATH — The most common, well-established career for someone with this exact major and skills. This should be the clearest and most obvious fit.
+2. ALTERNATIVE PATH 1 — A credible adjacent path that uses many of the same strengths in a different function, team, or domain. It should feel smart and attainable.
+3. ALTERNATIVE PATH 2 — Another credible alternative, distinct from Alternative Path 1. It should open a different lane, not just be a near-duplicate title.
+4. HIDDEN OPPORTUNITY — A less obvious but still believable opportunity. It should reuse the user's strengths in an underexplored way, without becoming random or requiring a full reinvention.
 
 For every career:
+- Include a "pathType" field with one of: "traditional", "alternative", or "hidden_opportunity"
 - In whyFits, directly reference the user's stated major and skills by name (e.g., "Your ${major} background means you already understand X")
+- For alternative and hidden-opportunity roles, make at least one whyFits bullet explain the bridge clearly: why this role makes sense even if the user would not have thought of it immediately
 - In skillGaps, list only skills they don't have yet — not ones they've already listed
 - In suggestedActions, provide 3 specific, named next steps with real resources (courses, certifications, communities — name them)
 - salaryRange: realistic US entry-level salary estimate for 2024
@@ -68,6 +87,7 @@ For every career:
 - timeToTransition: how long to land this first role from today (e.g., "3–6 months with focused prep")`
     }
 
+    prompt += skillContext
     prompt += `
 
 Return a JSON object with this exact structure:
@@ -75,6 +95,7 @@ Return a JSON object with this exact structure:
   "careers": [
     {
       "id": "unique-kebab-case-id",
+      "pathType": "traditional",
       "title": "Job Title",
       "industry": "Industry Name",
       "color": "from-[#HEX] to-[#HEX]",
@@ -108,14 +129,14 @@ Return ONLY valid JSON. No markdown, no code blocks, just the JSON object.`
         {
           role: "system",
           content:
-            "You are an expert career strategist with 20 years of experience across tech, finance, consulting, and creative industries. You give brutally honest, specific, data-informed career advice. You always tie recommendations directly to the user's stated background — never give generic advice. Return valid JSON only.",
+            "You are an expert career strategist with 20 years of experience across tech, finance, consulting, and creative industries. You give brutally honest, specific, data-informed career advice. CRITICAL: Every recommendation must have a strong, direct connection to the user's major and skills — at least 2 of their stated skills should be core to the role. Never suggest careers that require learning an entirely different discipline. Prioritize relevance over novelty. For root recommendations, internally structure the set as 1 traditional path, 2 distinct alternative paths, and 1 hidden opportunity. Return valid JSON only.",
         },
         {
           role: "user",
           content: prompt,
         },
       ],
-      temperature: 0.7,
+      temperature: 0.5,
       response_format: { type: "json_object" },
     })
 

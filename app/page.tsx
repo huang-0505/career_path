@@ -162,6 +162,7 @@ export default function OnboardingPage() {
 
 type CareerNode = {
   id: string
+  pathType?: "traditional" | "alternative" | "hidden_opportunity"
   title: string
   industry: string
   color: string
@@ -780,7 +781,7 @@ function CareerExplorer({ formData, session }: { formData: any; session: any }) 
               >
                 {(isLoadingCareers || !isContentReady) ? (
                   <div className="flex flex-col gap-3 h-full">
-                    {[1, 2, 3].map((idx) => (
+                    {[1, 2, 3, 4].map((idx) => (
                       <div
                         key={idx}
                         className="flex-1 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 p-5 shadow-lg border border-white/20 animate-pulse flex flex-col justify-between"
@@ -840,7 +841,7 @@ function CareerExplorer({ formData, session }: { formData: any; session: any }) 
                   </div>
                 ) : isContentReady ? (
                   <div className="flex flex-col gap-3 h-full animate-fade-in">
-                    {secondaryNodes.slice(0, 3).map((node, idx) => (
+                    {secondaryNodes.slice(0, 4).map((node, idx) => (
                       <div
                         key={node.id}
                         className="group w-full transition-all duration-500 hover:scale-[1.01] relative flex-1"
