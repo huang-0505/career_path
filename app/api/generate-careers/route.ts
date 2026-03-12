@@ -124,7 +124,7 @@ Color guidelines by industry:
 Return ONLY valid JSON. No markdown, no code blocks, just the JSON object.`
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5.2",
       messages: [
         {
           role: "system",
