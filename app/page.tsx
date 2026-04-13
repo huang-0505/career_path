@@ -10,6 +10,26 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowRight, Sparkles, ChevronLeft } from "lucide-react"
 
+const CAREER_PRIORITIES = [
+  "Higher salary",
+  "Better work-life balance",
+  "More meaningful work",
+  "Remote flexibility",
+  "Leadership opportunities",
+  "Career change",
+  "Job stability",
+]
+
+const WORK_STYLES = ["Remote", "Hybrid", "In-office", "No preference"]
+
+const EXPERIENCE_LEVELS = [
+  { value: "student", label: "Student / Just starting out" },
+  { value: "0-1", label: "Less than 1 year of experience" },
+  { value: "1-3", label: "1–3 years of experience" },
+  { value: "3-7", label: "3–7 years of experience" },
+  { value: "7+", label: "7+ years of experience" },
+]
+
 export default function OnboardingPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -17,6 +37,10 @@ export default function OnboardingPage() {
     major: "",
     skills: "",
     resume: null as File | null,
+    experienceLevel: "",
+    currentRole: "",
+    careerPriorities: [] as string[],
+    workStyle: "",
   })
   const [isExploring, setIsExploring] = useState(false)
 
@@ -79,17 +103,52 @@ export default function OnboardingPage() {
             </button>
           </div>
           <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="major" className="block text-sm font-medium mb-2 text-foreground">
+                  {"What did you study?"}
+                </label>
+                <Input
+                  id="major"
+                  type="text"
+                  placeholder="e.g., Computer Science, Psychology..."
+                  value={formData.major}
+                  onChange={(e) => setFormData({ ...formData, major: e.target.value })}
+                  required
+                  className="bg-white border-border/50 focus:border-[#FF6B9D] transition-colors"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="experienceLevel" className="block text-sm font-medium mb-2 text-foreground">
+                  {"Where are you in your career?"}
+                </label>
+                <select
+                  id="experienceLevel"
+                  value={formData.experienceLevel}
+                  onChange={(e) => setFormData({ ...formData, experienceLevel: e.target.value })}
+                  required
+                  className="w-full h-10 px-3 py-2 text-sm bg-white border border-border/50 rounded-md focus:outline-none focus:ring-1 focus:ring-[#FF6B9D] focus:border-[#FF6B9D] transition-colors text-foreground"
+                >
+                  <option value="" disabled>Select level...</option>
+                  {EXPERIENCE_LEVELS.map((level) => (
+                    <option key={level.value} value={level.value}>{level.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <div>
-              <label htmlFor="major" className="block text-sm font-medium mb-2 text-foreground">
-                {"What did you study?"}
+              <label htmlFor="currentRole" className="block text-sm font-medium mb-2 text-foreground">
+                {"Current or most recent role"}
+                <span className="ml-1 text-xs font-normal text-muted-foreground">(optional)</span>
               </label>
               <Input
-                id="major"
+                id="currentRole"
                 type="text"
-                placeholder="e.g., Computer Science, Psychology, Marketing..."
-                value={formData.major}
-                onChange={(e) => setFormData({ ...formData, major: e.target.value })}
-                required
+                placeholder="e.g., Marketing Intern, Software Engineer, Student..."
+                value={formData.currentRole}
+                onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
                 className="bg-white border-border/50 focus:border-[#FF6B9D] transition-colors"
               />
             </div>
@@ -104,14 +163,68 @@ export default function OnboardingPage() {
                 value={formData.skills}
                 onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
                 required
-                rows={4}
+                rows={3}
                 className="bg-white border-border/50 focus:border-[#FF6B9D] transition-colors resize-none"
               />
             </div>
 
             <div>
+              <label className="block text-sm font-medium mb-2 text-foreground">
+                {"What matters most to you?"}
+                <span className="ml-1 text-xs font-normal text-muted-foreground">(pick any)</span>
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {CAREER_PRIORITIES.map((priority) => (
+                  <button
+                    key={priority}
+                    type="button"
+                    onClick={() => {
+                      const current = formData.careerPriorities
+                      setFormData({
+                        ...formData,
+                        careerPriorities: current.includes(priority)
+                          ? current.filter((p) => p !== priority)
+                          : [...current, priority],
+                      })
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
+                      formData.careerPriorities.includes(priority)
+                        ? "bg-[#FF6B9D] text-white border-[#FF6B9D] shadow-sm"
+                        : "bg-white text-muted-foreground border-border/50 hover:border-[#FF6B9D] hover:text-foreground"
+                    }`}
+                  >
+                    {priority}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2 text-foreground">
+                {"How do you prefer to work?"}
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {WORK_STYLES.map((style) => (
+                  <button
+                    key={style}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, workStyle: formData.workStyle === style ? "" : style })}
+                    className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
+                      formData.workStyle === style
+                        ? "bg-[#FF6B9D] text-white border-[#FF6B9D] shadow-sm"
+                        : "bg-white text-muted-foreground border-border/50 hover:border-[#FF6B9D] hover:text-foreground"
+                    }`}
+                  >
+                    {style}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
               <label htmlFor="resume" className="block text-sm font-medium mb-2 text-foreground">
-                {"Resume (optional)"}
+                {"Resume"}
+                <span className="ml-1 text-xs font-normal text-muted-foreground">(optional)</span>
               </label>
               <div className="relative">
                 <input
@@ -371,6 +484,10 @@ function CareerExplorer({ formData, session }: { formData: any; session: any }) 
             major: formData.major,
             skills: formData.skills,
             hasResume: !!formData.resume,
+            experienceLevel: formData.experienceLevel,
+            currentRole: formData.currentRole,
+            careerPriorities: formData.careerPriorities,
+            workStyle: formData.workStyle,
           }),
         })
 

@@ -15,7 +15,7 @@ async function getSkillContext(): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
-    const { major, skills, parentCareer, hasResume } = await request.json()
+    const { major, skills, parentCareer, hasResume, experienceLevel, currentRole, careerPriorities, workStyle } = await request.json()
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -32,6 +32,25 @@ export async function POST(request: NextRequest) {
       ? `\nNote: The user has uploaded a resume — tailor recommendations for someone with documented, real-world experience.`
       : ""
 
+    const experienceLevelMap: Record<string, string> = {
+      student: "a student or someone just starting their career with no professional experience yet",
+      "0-1": "someone with less than 1 year of professional experience",
+      "1-3": "someone with 1–3 years of professional experience",
+      "3-7": "someone with 3–7 years of professional experience",
+      "7+": "a seasoned professional with 7+ years of experience",
+    }
+    const experienceNote = experienceLevel
+      ? `\n- Experience: ${experienceLevelMap[experienceLevel] || experienceLevel}`
+      : ""
+    const currentRoleNote = currentRole ? `\n- Current/Most Recent Role: ${currentRole}` : ""
+    const prioritiesNote =
+      careerPriorities?.length > 0
+        ? `\n- Career Priorities: ${careerPriorities.join(", ")} — weight recommendations toward these goals`
+        : ""
+    const workStyleNote = workStyle
+      ? `\n- Work Style Preference: ${workStyle} — prioritize roles that commonly offer this arrangement`
+      : ""
+
     const skillContext = await getSkillContext()
 
     let prompt = ""
@@ -45,7 +64,7 @@ Description: ${parentCareer.description}
 
 User's Original Background:
 - Major: ${major || "Not specified"}
-- Skills: ${skills || "Not specified"}${resumeNote}
+- Skills: ${skills || "Not specified"}${experienceNote}${currentRoleNote}${prioritiesNote}${workStyleNote}${resumeNote}
 
 Generate exactly 3 career options that are compelling next steps from "${parentCareer.title}". Use these three archetypes — one per career:
 
@@ -61,11 +80,16 @@ For every career:
 - marketDemand: one of "Growing", "Stable", or "Declining" — base it on real job market trends
 - timeToTransition: realistic estimate from "${parentCareer.title}" to this role`
     } else {
-      prompt = `You are an expert career strategist helping a recent graduate explore career paths for the first time.
+      const experienceLabel =
+        !experienceLevel || experienceLevel === "student" || experienceLevel === "0-1"
+          ? "a recent graduate or early-career professional"
+          : experienceLevelMap[experienceLevel] || "a professional"
+
+      prompt = `You are an expert career strategist helping ${experienceLabel} explore career paths.
 
 User's Background:
 - Major: ${major || "Not specified"}
-- Skills: ${skills || "Not specified"}${resumeNote}
+- Skills: ${skills || "Not specified"}${experienceNote}${currentRoleNote}${prioritiesNote}${workStyleNote}${resumeNote}
 
 CRITICAL: Every career you recommend MUST have a strong, direct connection to the user's major and skills. Use the Skill Knowledge Reference below to map their inputs to careers — recognize skill synonyms (e.g., "math" = quantitative/statistics) and follow the Major → Skill Clusters and Career → Core Skills tables. At least 2 of the user's stated skills (or inferred from their major) should be core to the role. Avoid careers that would require learning an entirely different discipline.
 
