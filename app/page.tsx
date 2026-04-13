@@ -23,11 +23,11 @@ const CAREER_PRIORITIES = [
 const WORK_STYLES = ["Remote", "Hybrid", "In-office", "No preference"]
 
 const EXPERIENCE_LEVELS = [
-  { value: "student", label: "Student / Just starting out" },
-  { value: "0-1", label: "Less than 1 year of experience" },
-  { value: "1-3", label: "1–3 years of experience" },
-  { value: "3-7", label: "3–7 years of experience" },
-  { value: "7+", label: "7+ years of experience" },
+  { value: "freshman", label: "Freshman — Student / No experience yet" },
+  { value: "junior", label: "Junior — 0–2 years of experience" },
+  { value: "mid", label: "Mid-level — 2–5 years of experience" },
+  { value: "senior", label: "Senior — 5–10 years of experience" },
+  { value: "principal", label: "Principal / Lead — 10+ years" },
 ]
 
 export default function OnboardingPage() {

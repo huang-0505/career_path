@@ -33,11 +33,11 @@ export async function POST(request: NextRequest) {
       : ""
 
     const experienceLevelMap: Record<string, string> = {
-      student: "a student or someone just starting their career with no professional experience yet",
-      "0-1": "someone with less than 1 year of professional experience",
-      "1-3": "someone with 1–3 years of professional experience",
-      "3-7": "someone with 3–7 years of professional experience",
-      "7+": "a seasoned professional with 7+ years of experience",
+      freshman: "a student or freshman with no professional experience yet",
+      junior: "a junior professional with 0–2 years of experience",
+      mid: "a mid-level professional with 2–5 years of experience",
+      senior: "a senior professional with 5–10 years of experience",
+      principal: "a principal or lead with 10+ years of experience",
     }
     const experienceNote = experienceLevel
       ? `\n- Experience: ${experienceLevelMap[experienceLevel] || experienceLevel}`
@@ -81,7 +81,7 @@ For every career:
 - timeToTransition: realistic estimate from "${parentCareer.title}" to this role`
     } else {
       const experienceLabel =
-        !experienceLevel || experienceLevel === "student" || experienceLevel === "0-1"
+        !experienceLevel || experienceLevel === "freshman" || experienceLevel === "junior"
           ? "a recent graduate or early-career professional"
           : experienceLevelMap[experienceLevel] || "a professional"
 
