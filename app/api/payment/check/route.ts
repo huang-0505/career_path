@@ -21,9 +21,8 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       hasPaid: !!payment,
-      payment 
     })
   } catch (error: any) {
     console.error("Error checking payment:", error)
